@@ -106,6 +106,13 @@ const zh = {
     next: "下一位",
     close: "关闭",
   },
+  universe: {
+    hint: "拖动漫游 · 滚轮或双指缩放",
+    zoomIn: "放大",
+    zoomOut: "缩小",
+    reset: "回到全景",
+    createStar: "点亮一颗星",
+  },
   journal: {
     title: "时光",
     composerPlaceholder: "记下此刻——一段话、几张照片，都会被永久保存",

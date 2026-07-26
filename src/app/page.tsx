@@ -1,5 +1,7 @@
 import Link from "next/link";
-import MemoryWall, { type WallPerson } from "@/components/wall/MemoryWall";
+import MemoryUniverse, {
+  type UniversePerson,
+} from "@/components/wall/MemoryUniverse";
 import { getDictionary, getLocale } from "@/i18n/server";
 import { gatewayUrlFor } from "@/lib/irys/config";
 import { listMemorials } from "@/lib/memorial/repo";
@@ -35,9 +37,9 @@ export default async function Home() {
   const locale = await getLocale();
   const t = getDictionary(locale);
 
-  let people: WallPerson[] = [];
+  let people: UniversePerson[] = [];
   try {
-    const { items } = await listMemorials({ limit: 60 });
+    const { items } = await listMemorials({ limit: 100 });
     people = items.map(({ manifest }) => ({
       id: manifest.id,
       name: manifest.subject.name,
@@ -56,53 +58,32 @@ export default async function Home() {
 
   return (
     <main className="flex flex-1 flex-col">
-      {/* Slim hero */}
-      <section className="halo relative flex flex-col items-center px-4 pb-12 pt-16 text-center sm:pt-20">
-        <p className="mb-5 text-xs uppercase tracking-[0.35em] text-accent">
-          {t.common.permanentStorage}
-        </p>
-        <h1 className="max-w-3xl font-serif text-3xl font-semibold leading-tight sm:text-4xl md:text-5xl">
-          {t.home.heroTitle}
-        </h1>
-        <p className="mt-5 max-w-2xl text-sm leading-7 text-muted sm:text-base">
-          {t.home.heroSubtitle}
-        </p>
-        <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
-          <Link
-            href="/create"
-            className="inline-flex h-11 items-center justify-center rounded-full bg-accent px-7 text-sm font-medium text-accent-foreground transition-colors hover:bg-accent-strong"
-          >
-            {t.home.ctaCreate}
-          </Link>
-          <Link
-            href="/explore"
-            className="inline-flex h-11 items-center justify-center rounded-full border border-border px-7 text-sm font-medium transition-colors hover:border-accent hover:text-accent"
-          >
-            {t.home.ctaExplore}
-          </Link>
-        </div>
-      </section>
+      {/* 记忆星海 — the whole first screen is people. */}
+      <section className="relative h-[calc(100dvh-4rem)] min-h-[560px] overflow-hidden">
+        <MemoryUniverse people={people} />
 
-      {/* The Wall of Memory */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-          <div className="mb-8 text-center">
-            <h2 className="font-serif text-2xl font-semibold sm:text-3xl">
-              {t.wall.title}
-            </h2>
-            <p className="mt-2 text-sm text-muted">{t.wall.subtitle}</p>
+        {/* Hero overlay floating above the sea of stars. */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-background via-background/75 to-transparent px-4 pb-20 pt-10 text-center">
+          <p className="mb-4 text-[11px] uppercase tracking-[0.35em] text-accent">
+            {t.common.permanentStorage}
+          </p>
+          <h1 className="mx-auto max-w-2xl font-serif text-3xl font-semibold leading-tight sm:text-4xl">
+            {t.home.heroTitle}
+          </h1>
+          <p className="mx-auto mt-3 hidden max-w-xl text-sm leading-6 text-muted sm:block">
+            {t.home.heroSubtitle}
+          </p>
+          <div className="pointer-events-auto mt-6 flex items-center justify-center gap-3">
+            <Link href="/create" className="btn-primary">
+              {t.home.ctaCreate}
+            </Link>
+            <Link
+              href="/explore"
+              className="btn-outline bg-background/60 backdrop-blur"
+            >
+              {t.home.ctaExplore}
+            </Link>
           </div>
-          <MemoryWall people={people} />
-          {people.length > 0 && (
-            <div className="mt-10 text-center">
-              <Link
-                href="/explore"
-                className="text-sm text-accent underline-offset-4 hover:underline"
-              >
-                {t.wall.viewAll} →
-              </Link>
-            </div>
-          )}
         </div>
       </section>
 

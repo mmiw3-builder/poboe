@@ -140,6 +140,78 @@ body.candlelight {
   cursor: not-allowed;
 }
 
+/* 记忆星海 — the Sea of Memory. Deep-space backdrop with faint fixed stars. */
+.universe-bg {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 42%, var(--halo), transparent 70%),
+    var(--background);
+}
+.universe-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: radial-gradient(
+      1.5px 1.5px at 18% 26%,
+      color-mix(in srgb, var(--accent) 45%, transparent) 50%,
+      transparent 51%
+    ),
+    radial-gradient(
+      1px 1px at 71% 14%,
+      color-mix(in srgb, var(--accent) 35%, transparent) 50%,
+      transparent 51%
+    ),
+    radial-gradient(
+      1px 1px at 84% 63%,
+      color-mix(in srgb, var(--accent) 40%, transparent) 50%,
+      transparent 51%
+    ),
+    radial-gradient(
+      1.5px 1.5px at 39% 78%,
+      color-mix(in srgb, var(--accent) 30%, transparent) 50%,
+      transparent 51%
+    ),
+    radial-gradient(
+      1px 1px at 9% 58%,
+      color-mix(in srgb, var(--accent) 35%, transparent) 50%,
+      transparent 51%
+    ),
+    radial-gradient(
+      1px 1px at 55% 91%,
+      color-mix(in srgb, var(--accent) 30%, transparent) 50%,
+      transparent 51%
+    ),
+    radial-gradient(
+      1px 1px at 92% 37%,
+      color-mix(in srgb, var(--accent) 40%, transparent) 50%,
+      transparent 51%
+    );
+}
+/* One person, seen from far away: a small glimmering star. */
+.star-node {
+  box-shadow: 0 0 7px 2px color-mix(in srgb, var(--accent) 50%, transparent);
+  animation: twinkle 3.2s ease-in-out infinite;
+  animation-delay: var(--tw, 0s);
+}
+.star-node--living {
+  box-shadow: 0 0 7px 2px color-mix(in srgb, var(--life) 55%, transparent);
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .star-node {
+    animation: none;
+  }
+}
+
 /* Living-page heartbeat: a quiet pulse next to "a life in progress". */
 .life-dot {
   display: inline-block;

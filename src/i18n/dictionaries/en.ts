@@ -106,6 +106,13 @@ const en: Dictionary = {
     next: "Next",
     close: "Close",
   },
+  universe: {
+    hint: "Drag to roam · scroll or pinch to zoom",
+    zoomIn: "Zoom in",
+    zoomOut: "Zoom out",
+    reset: "Back to full view",
+    createStar: "Light a star",
+  },
   journal: {
     title: "Moments",
     composerPlaceholder:
