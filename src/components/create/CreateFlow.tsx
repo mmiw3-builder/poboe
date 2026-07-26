@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import BillingPanel from "@/components/create/BillingPanel";
 import BioInterview from "@/components/create/BioInterview";
 import ContributionReview from "@/components/create/ContributionReview";
 import MemorialView from "@/components/memorial/MemorialView";
@@ -95,6 +96,12 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
 
   // Step 3 — publish
   const [agree, setAgree] = useState(false);
+  const [mediaCostMicroUsd, setMediaCostMicroUsd] = useState(0);
+  const [quoteSufficient, setQuoteSufficient] = useState(true);
+  const onSufficiency = useCallback(
+    (ok: boolean) => setQuoteSufficient(ok),
+    [],
+  );
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{
@@ -161,6 +168,12 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
     return map;
   }, [portrait, voice, gallery]);
 
+  function uploadErrorText(err: unknown): string {
+    return err instanceof Error && err.message === "insufficient_balance"
+      ? t.billing.insufficient
+      : t.create.upload.failed;
+  }
+
   async function handlePortrait(file: File) {
     const localId = crypto.randomUUID();
     setError(null);
@@ -171,10 +184,11 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
     });
     try {
       const media = await uploadMedia(file);
+      setMediaCostMicroUsd((c) => c + (media.costMicroUsd ?? 0));
       setPortrait({ status: "done", localId, media, caption: "" });
-    } catch {
+    } catch (err) {
       setPortrait(null);
-      setError(t.create.upload.failed);
+      setError(uploadErrorText(err));
     }
   }
 
@@ -188,10 +202,11 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
     });
     try {
       const media = await uploadMedia(file);
+      setMediaCostMicroUsd((c) => c + (media.costMicroUsd ?? 0));
       setVoice({ status: "done", localId, media, caption: "" });
-    } catch {
+    } catch (err) {
       setVoice(null);
-      setError(t.create.upload.failed);
+      setError(uploadErrorText(err));
     }
   }
 
@@ -209,6 +224,7 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
       ]);
       try {
         const media = await uploadMedia(file);
+        setMediaCostMicroUsd((c) => c + (media.costMicroUsd ?? 0));
         setGallery((g) =>
           g.map((item) =>
             item.localId === localId
@@ -216,9 +232,9 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
               : item,
           ),
         );
-      } catch {
+      } catch (err) {
         setGallery((g) => g.filter((item) => item.localId !== localId));
-        setError(t.create.upload.failed);
+        setError(uploadErrorText(err));
       }
     }
   }
@@ -255,6 +271,8 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
         if (err.code === "content_rejected") setError(t.create.errors.rejected);
         else if (err.code === "rate_limited")
           setError(t.create.errors.rateLimited);
+        else if (err.code === "insufficient_balance")
+          setError(t.billing.insufficient);
         else setError(t.create.errors.failed);
       } else {
         setError(t.create.errors.failed);
@@ -740,6 +758,12 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
             </p>
           )}
 
+          <BillingPanel
+            bytesEstimate={JSON.stringify(previewData).length + 500}
+            mediaCostMicroUsd={mediaCostMicroUsd}
+            onSufficiency={onSufficiency}
+          />
+
           <label className="mt-8 flex items-start gap-3 text-sm leading-6">
             <input
               type="checkbox"
@@ -757,7 +781,13 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
             <button
               type="button"
               className="btn-primary"
-              disabled={publishing || uploadBusy || !agree || !name.trim()}
+              disabled={
+                publishing ||
+                uploadBusy ||
+                !agree ||
+                !name.trim() ||
+                !quoteSufficient
+              }
               onClick={() => void handlePublish()}
             >
               {publishing ? t.create.publishing : t.create.publish}

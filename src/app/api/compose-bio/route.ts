@@ -3,7 +3,7 @@ import { z } from "zod";
 import { errors, ok } from "@/lib/api/respond";
 import { composeBio } from "@/lib/ai/composeBio";
 import { userFromRequest } from "@/lib/auth/session";
-import { clientKeyFromHeaders, rateLimit } from "@/lib/moderation/rateLimit";
+import { rateLimit } from "@/lib/moderation/rateLimit";
 import { moderateText } from "@/lib/moderation/text";
 
 export const runtime = "nodejs";

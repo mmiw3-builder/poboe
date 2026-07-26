@@ -103,6 +103,17 @@ const zh = {
     next: "下一位",
     close: "关闭",
   },
+  billing: {
+    balance: "余额",
+    freeLeft: "免费额度剩余",
+    thisPublish: "本次发布费用",
+    mediaCharged: "本次流程中媒体已扣费",
+    freeCovered: "在免费额度内，无需付费",
+    insufficient: "余额不足，请先充值后再发布",
+    recharge: "去充值",
+    afterBalance: "发布后余额",
+    priceNote: "存储按量计费，约 $0.02/MB，一次付费永久存储",
+  },
   auth: {
     signIn: "登录",
     signOut: "退出登录",

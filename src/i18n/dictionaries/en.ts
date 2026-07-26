@@ -103,6 +103,18 @@ const en: Dictionary = {
     next: "Next",
     close: "Close",
   },
+  billing: {
+    balance: "Balance",
+    freeLeft: "Free allowance left",
+    thisPublish: "Cost of this publish",
+    mediaCharged: "Media charged in this session",
+    freeCovered: "Covered by your free allowance — no charge",
+    insufficient: "Insufficient balance — please top up before publishing",
+    recharge: "Top up",
+    afterBalance: "Balance after publishing",
+    priceNote:
+      "Storage is usage-priced at about $0.02/MB — pay once, stored forever",
+  },
   auth: {
     signIn: "Sign in",
     signOut: "Sign out",

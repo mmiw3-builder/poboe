@@ -35,6 +35,8 @@ export async function compressImage(
 export interface UploadedMedia extends MediaRef {
   /** Local object URL for immediate preview. */
   previewUrl: string;
+  /** What this upload deducted from the balance (0 when free allowance covered it). */
+  costMicroUsd?: number;
 }
 
 /**
@@ -79,7 +81,7 @@ export async function uploadMedia(file: File): Promise<UploadedMedia> {
   );
   const res = await fetch("/api/upload", { method: "POST", body: form });
   const json = (await res.json()) as {
-    data?: { txId: string; size: number };
+    data?: { txId: string; size: number; costMicroUsd?: number };
     error?: { code: string };
   };
   if (!res.ok || !json.data) {
@@ -93,6 +95,7 @@ export async function uploadMedia(file: File): Promise<UploadedMedia> {
     size: json.data.size,
     ...(dims ?? {}),
     previewUrl: URL.createObjectURL(payload),
+    costMicroUsd: json.data.costMicroUsd ?? 0,
   };
 }
 

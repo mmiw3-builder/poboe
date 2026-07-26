@@ -20,6 +20,12 @@ export const errors = {
   unsupported: (msg: string) => fail(415, "unsupported_type", msg),
   rateLimited: () =>
     fail(429, "rate_limited", "Too many requests — please try again later."),
+  insufficientBalance: (requiredMicroUsd: number, balanceMicroUsd: number) =>
+    fail(
+      402,
+      "insufficient_balance",
+      `Insufficient balance: need ${requiredMicroUsd} µUSD, have ${balanceMicroUsd} µUSD.`,
+    ),
   rejected: (reasons: string[]) =>
     fail(
       422,

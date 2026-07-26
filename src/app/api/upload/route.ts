@@ -1,10 +1,15 @@
 import type { NextRequest } from "next/server";
 import { errors, ok } from "@/lib/api/respond";
 import { userFromRequest } from "@/lib/auth/session";
+import {
+  InsufficientBalanceError,
+  chargeBytes,
+  refundCharge,
+} from "@/lib/billing/engine";
 import { getAppTag } from "@/lib/irys/config";
 import { uploadBuffer } from "@/lib/irys/server";
 import { LIMITS, isAllowedMediaType, maxBytesFor } from "@/lib/moderation/limits";
-import { clientKeyFromHeaders, rateLimit } from "@/lib/moderation/rateLimit";
+import { rateLimit } from "@/lib/moderation/rateLimit";
 import { TAGS } from "@/lib/memorial/schema";
 
 export const runtime = "nodejs";
@@ -60,6 +65,22 @@ export async function POST(req: NextRequest) {
     return errors.tooLarge("File exceeds the size limit.");
   }
 
+  // Charge first (free allowance applied automatically), refund on failure.
+  let charge;
+  try {
+    charge = await chargeBytes(
+      user.id,
+      buffer.length,
+      "upload",
+      `media ${file.type} (${buffer.length}B)`,
+    );
+  } catch (err) {
+    if (err instanceof InsufficientBalanceError) {
+      return errors.insufficientBalance(err.required, err.balance);
+    }
+    throw err;
+  }
+
   try {
     const result = await uploadBuffer(buffer, [
       { name: TAGS.contentType, value: file.type },
@@ -70,9 +91,14 @@ export async function POST(req: NextRequest) {
       kind,
       contentType: file.type,
       size: buffer.length,
+      costMicroUsd: charge.costMicroUsd,
+      freeBytesApplied: charge.freeBytesApplied,
     });
   } catch (err) {
     console.error("media upload failed:", err);
+    await refundCharge(user.id, charge, "upload-failed", "refund failed media upload").catch(
+      () => {},
+    );
     return errors.internal("Upload to permanent storage failed.");
   }
 }

@@ -1,6 +1,11 @@
 import type { NextRequest } from "next/server";
 import { errors, ok } from "@/lib/api/respond";
 import { userFromRequest } from "@/lib/auth/session";
+import {
+  InsufficientBalanceError,
+  chargeBytes,
+  refundCharge,
+} from "@/lib/billing/engine";
 import { db, schema } from "@/lib/db";
 import { getAppTag } from "@/lib/irys/config";
 import { uploadJson } from "@/lib/irys/server";
@@ -8,7 +13,7 @@ import { verifyManifest } from "@/lib/memorial/identity";
 import { getMemorial } from "@/lib/memorial/repo";
 import { TAGS, memorialManifestSchema } from "@/lib/memorial/schema";
 import { LIMITS } from "@/lib/moderation/limits";
-import { clientKeyFromHeaders, rateLimit } from "@/lib/moderation/rateLimit";
+import { rateLimit } from "@/lib/moderation/rateLimit";
 import { moderateText } from "@/lib/moderation/text";
 
 export const runtime = "nodejs";
@@ -85,6 +90,21 @@ export async function POST(req: NextRequest) {
   ]);
   if (!verdict.ok) return errors.rejected(verdict.reasons);
 
+  let charge;
+  try {
+    charge = await chargeBytes(
+      user.id,
+      manifestBytes,
+      "publish",
+      `manifest ${manifest.id} v${manifest.version} (${manifestBytes}B)`,
+    );
+  } catch (err) {
+    if (err instanceof InsufficientBalanceError) {
+      return errors.insufficientBalance(err.required, err.balance);
+    }
+    throw err;
+  }
+
   try {
     const result = await uploadJson(manifest, [
       { name: TAGS.appName, value: getAppTag() },
@@ -101,9 +121,21 @@ export async function POST(req: NextRequest) {
       })
       .onConflictDoNothing()
       .catch(() => {});
-    return ok({ txId: result.id, id: manifest.id, version: manifest.version });
+    return ok({
+      txId: result.id,
+      id: manifest.id,
+      version: manifest.version,
+      costMicroUsd: charge.costMicroUsd,
+      freeBytesApplied: charge.freeBytesApplied,
+    });
   } catch (err) {
     console.error("memorial publish failed:", err);
+    await refundCharge(
+      user.id,
+      charge,
+      "publish-failed",
+      "refund failed manifest publish",
+    ).catch(() => {});
     return errors.internal("Upload to permanent storage failed.");
   }
 }
