@@ -1,7 +1,8 @@
 import Link from "next/link";
-import MemorialCard from "@/components/memorial/MemorialCard";
+import MemoryWall, { type WallPerson } from "@/components/wall/MemoryWall";
 import { getDictionary, getLocale } from "@/i18n/server";
-import { listMemorials, type MemorialListItem } from "@/lib/memorial/repo";
+import { gatewayUrlFor } from "@/lib/irys/config";
+import { listMemorials } from "@/lib/memorial/repo";
 
 const FEATURE_ICONS: Record<string, React.ReactNode> = {
   permanent: (
@@ -34,57 +35,75 @@ export default async function Home() {
   const locale = await getLocale();
   const t = getDictionary(locale);
 
-  let recent: MemorialListItem[] = [];
+  let people: WallPerson[] = [];
   try {
-    recent = (await listMemorials({ limit: 6 })).items;
+    const { items } = await listMemorials({ limit: 60 });
+    people = items.map(({ manifest }) => ({
+      id: manifest.id,
+      name: manifest.subject.name,
+      altName: manifest.subject.altName,
+      born: manifest.subject.born,
+      died: manifest.subject.died,
+      epitaph: manifest.subject.epitaph,
+      portraitUrl: manifest.subject.portrait
+        ? gatewayUrlFor(manifest.subject.portrait.txId)
+        : undefined,
+    }));
   } catch {
-    // The home page must render even if the index is unreachable.
+    // The wall renders with vacant tiles even if the index is unreachable.
   }
 
   return (
     <main className="flex flex-1 flex-col">
-      {/* Hero */}
-      <section className="halo relative flex flex-col items-center px-4 pb-20 pt-24 text-center sm:pt-32">
-        <p className="mb-6 text-xs uppercase tracking-[0.35em] text-accent">
+      {/* Slim hero */}
+      <section className="halo relative flex flex-col items-center px-4 pb-12 pt-16 text-center sm:pt-20">
+        <p className="mb-5 text-xs uppercase tracking-[0.35em] text-accent">
           {t.common.permanentStorage}
         </p>
-        <h1 className="max-w-3xl font-serif text-4xl font-semibold leading-tight sm:text-5xl md:text-6xl">
+        <h1 className="max-w-3xl font-serif text-3xl font-semibold leading-tight sm:text-4xl md:text-5xl">
           {t.home.heroTitle}
         </h1>
-        <p className="mt-6 max-w-2xl text-base leading-7 text-muted sm:text-lg sm:leading-8">
+        <p className="mt-5 max-w-2xl text-sm leading-7 text-muted sm:text-base">
           {t.home.heroSubtitle}
         </p>
-        <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row">
+        <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
           <Link
             href="/create"
-            className="inline-flex h-12 items-center justify-center rounded-full bg-accent px-8 text-sm font-medium text-accent-foreground transition-colors hover:bg-accent-strong"
+            className="inline-flex h-11 items-center justify-center rounded-full bg-accent px-7 text-sm font-medium text-accent-foreground transition-colors hover:bg-accent-strong"
           >
             {t.home.ctaCreate}
           </Link>
           <Link
             href="/explore"
-            className="inline-flex h-12 items-center justify-center rounded-full border border-border px-8 text-sm font-medium transition-colors hover:border-accent hover:text-accent"
+            className="inline-flex h-11 items-center justify-center rounded-full border border-border px-7 text-sm font-medium transition-colors hover:border-accent hover:text-accent"
           >
             {t.home.ctaExplore}
           </Link>
         </div>
       </section>
 
-      {/* Recent memorials */}
-      {recent.length > 0 && (
-        <section className="border-t border-border">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-            <h2 className="mb-8 text-center font-serif text-2xl font-semibold">
-              {t.home.recentMemorials}
+      {/* The Wall of Memory */}
+      <section className="border-t border-border">
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+          <div className="mb-8 text-center">
+            <h2 className="font-serif text-2xl font-semibold sm:text-3xl">
+              {t.wall.title}
             </h2>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {recent.map((item) => (
-                <MemorialCard key={item.manifest.id} manifest={item.manifest} />
-              ))}
-            </div>
+            <p className="mt-2 text-sm text-muted">{t.wall.subtitle}</p>
           </div>
-        </section>
-      )}
+          <MemoryWall people={people} />
+          {people.length > 0 && (
+            <div className="mt-10 text-center">
+              <Link
+                href="/explore"
+                className="text-sm text-accent underline-offset-4 hover:underline"
+              >
+                {t.wall.viewAll} →
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Features */}
       <section className="border-t border-border">

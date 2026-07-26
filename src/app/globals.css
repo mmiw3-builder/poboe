@@ -119,3 +119,40 @@ body {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* Memory-wall entrance: tiles surface one after another. */
+@keyframes tile-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.tile-in {
+  animation: tile-in 0.5s ease-out both;
+  animation-delay: calc(min(var(--i, 0), 40) * 28ms);
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.modal-in {
+  animation: modal-in 0.28s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile-in,
+  .modal-in {
+    animation: none;
+  }
+}
