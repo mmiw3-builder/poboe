@@ -41,6 +41,10 @@ export default function EditLoader({ memorialId }: { memorialId: string }) {
         mediaUrls[manifest.subject.portrait.txId] =
           `${gateway}/${manifest.subject.portrait.txId}`;
       }
+      if (manifest.subject.voice) {
+        mediaUrls[manifest.subject.voice.txId] =
+          `${gateway}/${manifest.subject.voice.txId}`;
+      }
       for (const ref of manifest.media) {
         mediaUrls[ref.txId] = `${gateway}/${ref.txId}`;
       }

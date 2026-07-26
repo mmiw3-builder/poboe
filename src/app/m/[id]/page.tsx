@@ -17,6 +17,11 @@ function mediaUrlMap(manifest: MemorialManifest): Record<string, string> {
       manifest.subject.portrait.txId,
     );
   }
+  if (manifest.subject.voice) {
+    map[manifest.subject.voice.txId] = gatewayUrlFor(
+      manifest.subject.voice.txId,
+    );
+  }
   for (const ref of manifest.media) {
     map[ref.txId] = gatewayUrlFor(ref.txId);
   }
@@ -78,7 +83,11 @@ export default async function MemorialPage(props: PageProps<"/m/[id]">) {
   return (
     <main className="flex-1 pb-10">
       <MemorialView
-        data={{ ...manifest.subject, media: manifest.media }}
+        data={{
+          ...manifest.subject,
+          media: manifest.media,
+          events: manifest.events,
+        }}
         mediaUrls={mediaUrlMap(manifest)}
       />
 

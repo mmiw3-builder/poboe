@@ -4,6 +4,7 @@ import { generateKeyPair } from "@/lib/crypto";
 import { deriveMemorialId, signManifest } from "@/lib/memorial/identity";
 import {
   SCHEMA_MEMORIAL,
+  type LifeEvent,
   type MediaRef,
   type MemorialManifest,
   type UnsignedMemorialManifest,
@@ -15,10 +16,15 @@ export interface MemorialDraft {
   altName?: string;
   born?: string;
   died?: string;
+  bornDate?: string;
+  diedDate?: string;
   epitaph?: string;
   bio?: string;
   portrait?: MediaRef;
+  voice?: MediaRef;
   media: MediaRef[];
+  events?: LifeEvent[];
+  approvedContributions?: string[];
   tributesEnabled: boolean;
   lang: string;
 }
@@ -55,9 +61,25 @@ function toSubject(draft: MemorialDraft) {
     altName: clean(draft.altName),
     born: clean(draft.born),
     died: clean(draft.died),
+    bornDate: clean(draft.bornDate),
+    diedDate: clean(draft.diedDate),
     epitaph: clean(draft.epitaph),
     bio: clean(draft.bio),
     portrait: draft.portrait,
+    voice: draft.voice,
+  };
+}
+
+/** Omit empty optional arrays so old-style manifests stay byte-identical. */
+function optionalArrays(draft: MemorialDraft): {
+  events?: LifeEvent[];
+  approvedContributions?: string[];
+} {
+  return {
+    events: draft.events?.length ? draft.events : undefined,
+    approvedContributions: draft.approvedContributions?.length
+      ? draft.approvedContributions
+      : undefined,
   };
 }
 
@@ -83,6 +105,7 @@ export async function publishNewMemorial(draft: MemorialDraft): Promise<{
     lang: draft.lang,
     subject: toSubject(draft),
     media: draft.media,
+    ...optionalArrays(draft),
     tributesEnabled: draft.tributesEnabled,
   };
   const manifest = signManifest(unsigned, keyPair.secretKey);
@@ -117,6 +140,7 @@ export async function publishUpdate(
     lang: draft.lang,
     subject: toSubject(draft),
     media: draft.media,
+    ...optionalArrays(draft),
     tributesEnabled: draft.tributesEnabled,
   };
   const manifest = signManifest(unsigned, key.secretKey);

@@ -75,6 +75,8 @@ export async function POST(req: NextRequest) {
     manifest.subject.bio,
     ...manifest.media.map((m) => m.caption),
     manifest.subject.portrait?.caption,
+    manifest.subject.voice?.caption,
+    ...(manifest.events ?? []).flatMap((ev) => [ev.year, ev.title, ev.detail]),
   ]);
   if (!verdict.ok) return errors.rejected(verdict.reasons);
 

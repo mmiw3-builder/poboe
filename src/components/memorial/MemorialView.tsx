@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useI18n } from "@/i18n/client";
-import type { MediaRef } from "@/lib/memorial/schema";
+import type { LifeEvent, MediaRef } from "@/lib/memorial/schema";
 
 /**
  * Shared presentational memorial ("digital gravestone"). Used both for the
@@ -18,7 +18,9 @@ export interface MemorialViewData {
   epitaph?: string;
   bio?: string;
   portrait?: MediaRef;
+  voice?: MediaRef;
   media: MediaRef[];
+  events?: LifeEvent[];
 }
 
 /** txId → displayable URL (gateway URL or local object URL in previews). */
@@ -95,6 +97,24 @@ export default function MemorialView({
         <div className="mt-10 h-px w-24 bg-accent/50" aria-hidden />
       </header>
 
+      {/* Voice legacy */}
+      {data.voice && resolveUrl(data.voice) && (
+        <section className="flex flex-col items-center py-8">
+          <p className="mb-3 text-[11px] uppercase tracking-[0.3em] text-accent">
+            {t.memorial.voice}
+          </p>
+          <audio
+            controls
+            preload="metadata"
+            src={resolveUrl(data.voice)}
+            className="w-full max-w-md"
+          />
+          {data.voice.caption && (
+            <p className="mt-2 text-xs text-muted">{data.voice.caption}</p>
+          )}
+        </section>
+      )}
+
       {/* Life story */}
       {paragraphs.length > 0 && (
         <section className="py-10">
@@ -106,6 +126,36 @@ export default function MemorialView({
               <p key={i}>{p}</p>
             ))}
           </div>
+        </section>
+      )}
+
+      {/* Timeline — a scroll through the years */}
+      {(data.events?.length ?? 0) > 0 && (
+        <section className="py-10">
+          <h2 className="mb-8 text-center font-serif text-2xl font-semibold">
+            {t.memorial.timeline}
+          </h2>
+          <ol className="relative mx-auto max-w-xl border-l border-accent/40 pl-8">
+            {data.events!.map((ev, i) => (
+              <li key={i} className="relative pb-8 last:pb-0">
+                <span
+                  className="absolute -left-[37px] top-1.5 h-2.5 w-2.5 rounded-full border border-accent bg-background"
+                  aria-hidden
+                />
+                <p className="font-serif text-sm tracking-[0.15em] text-accent">
+                  {ev.year}
+                </p>
+                <h3 className="mt-1 font-serif text-lg font-semibold">
+                  {ev.title}
+                </h3>
+                {ev.detail && (
+                  <p className="mt-1.5 text-sm leading-7 text-muted">
+                    {ev.detail}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ol>
         </section>
       )}
 

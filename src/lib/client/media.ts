@@ -42,15 +42,24 @@ export interface UploadedMedia extends MediaRef {
  * Images are compressed client-side; videos are size-checked as-is.
  */
 export async function uploadMedia(file: File): Promise<UploadedMedia> {
-  const isVideo = file.type.startsWith("video/");
+  const kind: "image" | "video" | "audio" = file.type.startsWith("video/")
+    ? "video"
+    : file.type.startsWith("audio/")
+      ? "audio"
+      : "image";
   let payload: Blob = file;
   let contentType = file.type;
 
-  if (isVideo) {
+  if (kind === "video") {
     if (!(LIMITS.allowedVideoTypes as readonly string[]).includes(file.type)) {
       throw new Error("unsupported-type");
     }
     if (file.size > LIMITS.maxVideoBytes) throw new Error("too-large");
+  } else if (kind === "audio") {
+    if (!(LIMITS.allowedAudioTypes as readonly string[]).includes(file.type)) {
+      throw new Error("unsupported-type");
+    }
+    if (file.size > LIMITS.maxAudioBytes) throw new Error("too-large");
   } else {
     payload = await compressImage(file);
     contentType = "image/webp";
@@ -61,7 +70,7 @@ export async function uploadMedia(file: File): Promise<UploadedMedia> {
     }
   }
 
-  const dims = isVideo ? null : await imageDimensions(payload);
+  const dims = kind === "image" ? await imageDimensions(payload) : null;
 
   const form = new FormData();
   form.append(
@@ -70,7 +79,7 @@ export async function uploadMedia(file: File): Promise<UploadedMedia> {
   );
   const res = await fetch("/api/upload", { method: "POST", body: form });
   const json = (await res.json()) as {
-    data?: { txId: string; kind: "image" | "video"; size: number };
+    data?: { txId: string; size: number };
     error?: { code: string };
   };
   if (!res.ok || !json.data) {
@@ -79,7 +88,7 @@ export async function uploadMedia(file: File): Promise<UploadedMedia> {
 
   return {
     txId: json.data.txId,
-    kind: isVideo ? "video" : "image",
+    kind,
     contentType,
     size: json.data.size,
     ...(dims ?? {}),

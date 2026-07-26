@@ -67,6 +67,8 @@ const en: Dictionary = {
   memorial: {
     story: "Life Story",
     gallery: "Gallery",
+    voice: "In their voice",
+    timeline: "Through the Years",
     inLivingMemory: "In loving memory",
     notFound: "Memorial not found",
     notFoundBody:
@@ -181,10 +183,23 @@ const en: Dictionary = {
       caption: "Caption (optional)",
       tributesEnabled: "Allow visitors to lay flowers, light candles and leave messages",
       lang: "Content language",
+      voice: "Voice legacy",
+      voiceHint:
+        "A clip of their voice or a song they hummed — sound brings a person closer than any photo (MP3/M4A/WAV, ≤3.5MB)",
+      timeline: "Life timeline",
+      timelineHint:
+        "Note the important moments by era — visitors will see a scroll through the years",
+      timelineYear: "Year",
+      timelineYearPlaceholder: "e.g. 1936 or Spring 1936",
+      timelineTitle: "Event",
+      timelineTitlePlaceholder: "e.g. Born in Nantong, Jiangsu",
+      timelineDetail: "Detail (optional)",
+      addEvent: "Add a moment",
     },
     upload: {
       addPortrait: "Choose portrait",
       addMedia: "Add photo / video",
+      addVoice: "Choose audio",
       uploading: "Uploading permanently…",
       uploaded: "Permanently stored",
       remove: "Remove",

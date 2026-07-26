@@ -11,7 +11,11 @@ import {
   publishNewMemorial,
   publishUpdate,
 } from "@/lib/client/publish";
-import type { MediaRef, MemorialManifest } from "@/lib/memorial/schema";
+import type {
+  LifeEvent,
+  MediaRef,
+  MemorialManifest,
+} from "@/lib/memorial/schema";
 import { LIMITS } from "@/lib/moderation/limits";
 
 /** Editing context: reuse the wizard on an existing memorial. */
@@ -69,9 +73,15 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
       ? toPending([initial.subject.portrait], edit.mediaUrls)[0]
       : null,
   );
+  const [voice, setVoice] = useState<PendingMedia | null>(() =>
+    initial?.subject.voice && edit
+      ? toPending([initial.subject.voice], edit.mediaUrls)[0]
+      : null,
+  );
   const [gallery, setGallery] = useState<PendingMedia[]>(() =>
     initial && edit ? toPending(initial.media, edit.mediaUrls) : [],
   );
+  const [events, setEvents] = useState<LifeEvent[]>(initial?.events ?? []);
   const [tributesEnabled, setTributesEnabled] = useState(
     initial?.tributesEnabled ?? true,
   );
@@ -86,11 +96,25 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
   } | null>(null);
 
   const portraitInput = useRef<HTMLInputElement>(null);
+  const voiceInput = useRef<HTMLInputElement>(null);
   const galleryInput = useRef<HTMLInputElement>(null);
 
   const uploadBusy =
     portrait?.status === "uploading" ||
+    voice?.status === "uploading" ||
     gallery.some((g) => g.status === "uploading");
+
+  const cleanEvents = useMemo(
+    () =>
+      events
+        .map((ev) => ({
+          year: ev.year.trim(),
+          title: ev.title.trim(),
+          detail: ev.detail?.trim() || undefined,
+        }))
+        .filter((ev) => ev.year && ev.title),
+    [events],
+  );
 
   const previewData = useMemo(() => {
     const doneGallery = gallery.filter(
@@ -108,20 +132,25 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
         portrait?.status === "done"
           ? toMediaRef(portrait.media)
           : undefined,
+      voice: voice?.status === "done" ? toMediaRef(voice.media) : undefined,
       media: doneGallery.map((g) => toMediaRef(g.media, g.caption)),
+      events: cleanEvents,
     };
-  }, [name, altName, born, died, epitaph, bio, portrait, gallery]);
+  }, [name, altName, born, died, epitaph, bio, portrait, voice, gallery, cleanEvents]);
 
   const previewUrls = useMemo(() => {
     const map: Record<string, string> = {};
     if (portrait?.status === "done") {
       map[portrait.media.txId] = portrait.media.previewUrl;
     }
+    if (voice?.status === "done") {
+      map[voice.media.txId] = voice.media.previewUrl;
+    }
     for (const g of gallery) {
       if (g.status === "done") map[g.media.txId] = g.media.previewUrl;
     }
     return map;
-  }, [portrait, gallery]);
+  }, [portrait, voice, gallery]);
 
   async function handlePortrait(file: File) {
     const localId = crypto.randomUUID();
@@ -136,6 +165,23 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
       setPortrait({ status: "done", localId, media, caption: "" });
     } catch {
       setPortrait(null);
+      setError(t.create.upload.failed);
+    }
+  }
+
+  async function handleVoice(file: File) {
+    const localId = crypto.randomUUID();
+    setError(null);
+    setVoice({
+      status: "uploading",
+      localId,
+      previewUrl: URL.createObjectURL(file),
+    });
+    try {
+      const media = await uploadMedia(file);
+      setVoice({ status: "done", localId, media, caption: "" });
+    } catch {
+      setVoice(null);
       setError(t.create.upload.failed);
     }
   }
@@ -186,6 +232,8 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
         media: previewData.media,
         tributesEnabled,
         lang: initial?.lang ?? locale,
+        // Keep previously-approved contributions across ordinary edits.
+        approvedContributions: edit?.manifest.approvedContributions,
       };
       if (edit) {
         await publishUpdate(edit.storedKey, edit.manifest, draft);
@@ -401,6 +449,125 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
               placeholder={t.create.fields.bioPlaceholder}
               maxLength={20000}
             />
+          </Field>
+
+          <Field label={t.create.fields.timeline}>
+            <p className="mb-3 text-xs text-muted">
+              {t.create.fields.timelineHint}
+            </p>
+            <div className="space-y-3">
+              {events.map((ev, i) => (
+                <div
+                  key={i}
+                  className="rounded-lg border border-border bg-surface p-3"
+                >
+                  <div className="flex gap-2">
+                    <input
+                      className="input !w-32"
+                      value={ev.year}
+                      maxLength={20}
+                      placeholder={t.create.fields.timelineYearPlaceholder}
+                      onChange={(e) =>
+                        setEvents((list) =>
+                          list.map((x, j) =>
+                            j === i ? { ...x, year: e.target.value } : x,
+                          ),
+                        )
+                      }
+                    />
+                    <input
+                      className="input flex-1"
+                      value={ev.title}
+                      maxLength={120}
+                      placeholder={t.create.fields.timelineTitlePlaceholder}
+                      onChange={(e) =>
+                        setEvents((list) =>
+                          list.map((x, j) =>
+                            j === i ? { ...x, title: e.target.value } : x,
+                          ),
+                        )
+                      }
+                    />
+                    <button
+                      type="button"
+                      aria-label={t.create.upload.remove}
+                      className="px-2 text-muted hover:text-red-500"
+                      onClick={() =>
+                        setEvents((list) => list.filter((_, j) => j !== i))
+                      }
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <input
+                    className="input mt-2"
+                    value={ev.detail ?? ""}
+                    maxLength={1000}
+                    placeholder={t.create.fields.timelineDetail}
+                    onChange={(e) =>
+                      setEvents((list) =>
+                        list.map((x, j) =>
+                          j === i ? { ...x, detail: e.target.value } : x,
+                        ),
+                      )
+                    }
+                  />
+                </div>
+              ))}
+              <button
+                type="button"
+                className="btn-outline !h-9 !px-4 text-xs"
+                disabled={events.length >= 50}
+                onClick={() =>
+                  setEvents((list) => [...list, { year: "", title: "" }])
+                }
+              >
+                + {t.create.fields.addEvent}
+              </button>
+            </div>
+          </Field>
+
+          <Field label={t.create.fields.voice}>
+            <p className="mb-3 text-xs text-muted">{t.create.fields.voiceHint}</p>
+            <input
+              ref={voiceInput}
+              type="file"
+              accept={LIMITS.allowedAudioTypes.join(",")}
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) void handleVoice(f);
+                e.target.value = "";
+              }}
+            />
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => voiceInput.current?.click()}
+                disabled={voice?.status === "uploading"}
+              >
+                {voice?.status === "uploading"
+                  ? t.create.upload.uploading
+                  : t.create.upload.addVoice}
+              </button>
+              {voice?.status === "done" && (
+                <>
+                  <audio
+                    controls
+                    src={voice.media.previewUrl}
+                    className="h-10 max-w-60"
+                  />
+                  <button
+                    type="button"
+                    className="text-xs text-muted hover:text-red-500"
+                    onClick={() => setVoice(null)}
+                  >
+                    {t.create.upload.remove}
+                  </button>
+                </>
+              )}
+            </div>
           </Field>
 
           <Field
