@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useI18n } from "@/i18n/client";
+import { shortIdentity, useAuth } from "@/lib/client/auth";
 
 const NAV_ITEMS = [
   { href: "/explore", key: "explore" },
@@ -11,6 +12,56 @@ const NAV_ITEMS = [
   { href: "/space", key: "mySpace" },
   { href: "/about", key: "about" },
 ] as const;
+
+function UserChip() {
+  const { t } = useI18n();
+  const { user, loading, logout } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  if (loading) return null;
+  if (!user) {
+    return (
+      <Link
+        href="/login"
+        className="rounded-full border border-border px-4 py-1.5 text-sm transition-colors hover:border-accent hover:text-accent"
+      >
+        {t.auth.signIn}
+      </Link>
+    );
+  }
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setMenuOpen((v) => !v)}
+        className="max-w-40 truncate rounded-full border border-accent/50 px-4 py-1.5 text-sm text-accent"
+      >
+        {shortIdentity(user)}
+      </button>
+      {menuOpen && (
+        <div className="absolute right-0 top-full z-50 mt-2 w-40 rounded-xl border border-border bg-background p-1 shadow-lg">
+          <Link
+            href="/space"
+            className="block rounded-lg px-3 py-2 text-sm hover:bg-halo"
+            onClick={() => setMenuOpen(false)}
+          >
+            {t.nav.mySpace}
+          </Link>
+          <button
+            type="button"
+            className="block w-full rounded-lg px-3 py-2 text-left text-sm text-muted hover:bg-halo"
+            onClick={() => {
+              setMenuOpen(false);
+              void logout();
+            }}
+          >
+            {t.auth.signOut}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Header() {
   const { t } = useI18n();
@@ -39,6 +90,7 @@ export default function Header() {
             </Link>
           ))}
           <LanguageSwitcher />
+          <UserChip />
         </nav>
 
         <button
@@ -81,6 +133,9 @@ export default function Header() {
             ))}
             <li className="px-2 py-2">
               <LanguageSwitcher />
+            </li>
+            <li className="px-2 py-2">
+              <UserChip />
             </li>
           </ul>
         </nav>

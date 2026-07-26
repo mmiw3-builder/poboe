@@ -6,6 +6,7 @@ import Footer from "@/components/site/Footer";
 import Header from "@/components/site/Header";
 import { I18nProvider } from "@/i18n/client";
 import { getDictionary, getLocale } from "@/i18n/server";
+import { AuthProvider } from "@/lib/client/auth";
 import { getTodayFestival } from "@/lib/festivals";
 import { SITE } from "@/lib/site";
 
@@ -61,6 +62,7 @@ export default async function RootLayout({
         className={`min-h-full flex flex-col${festival ? " candlelight" : ""}`}
       >
         <I18nProvider locale={locale} dictionary={dictionary}>
+          <AuthProvider>
           <Header />
           {festival && (
             <div className="border-b border-accent/30 bg-halo px-4 py-2.5 text-center text-sm">
@@ -78,6 +80,7 @@ export default async function RootLayout({
           )}
           <div className="flex flex-1 flex-col">{children}</div>
           <Footer />
+          </AuthProvider>
         </I18nProvider>
       </body>
     </html>
