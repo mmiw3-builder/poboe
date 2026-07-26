@@ -96,6 +96,50 @@ export default function Tributes({
         {t.tributes.title}
       </h2>
 
+      {/* The shelf: every candle and flower ever offered stays visible. */}
+      {(counts.candle > 0 || counts.flower > 0) && (
+        <div className="mb-8 flex flex-col items-center gap-4">
+          {counts.candle > 0 && (
+            <div className="flex flex-wrap items-end justify-center gap-x-2.5 gap-y-3 px-8">
+              {Array.from({ length: Math.min(counts.candle, 36) }).map(
+                (_, i) => (
+                  <span
+                    key={i}
+                    className="candle"
+                    style={{ height: `${14 + ((i * 7) % 9)}px` }}
+                    aria-hidden
+                  />
+                ),
+              )}
+              {counts.candle > 36 && (
+                <span className="ml-1 self-center text-xs text-muted">
+                  ×{counts.candle}
+                </span>
+              )}
+            </div>
+          )}
+          {counts.flower > 0 && (
+            <div className="flex flex-wrap justify-center gap-1.5 px-12">
+              {Array.from({ length: Math.min(counts.flower, 24) }).map(
+                (_, i) => (
+                  <span
+                    key={i}
+                    className="petal"
+                    style={{ transform: `rotate(${(i * 47) % 360}deg)` }}
+                    aria-hidden
+                  />
+                ),
+              )}
+              {counts.flower > 24 && (
+                <span className="ml-1 self-center text-xs text-muted">
+                  ×{counts.flower}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="flex items-center justify-center gap-4">
         <button
           type="button"

@@ -156,3 +156,61 @@ body {
     animation: none;
   }
 }
+
+/* Tribute shelf: every candle lit and flower laid stays visible. */
+.candle {
+  position: relative;
+  display: inline-block;
+  width: 7px;
+  background: linear-gradient(180deg, #efe7d3, #c9bda0);
+  border-radius: 2px;
+}
+.candle::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 7px;
+  height: 11px;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    closest-side,
+    #fff3c4,
+    #f3b552 55%,
+    rgba(243, 181, 82, 0)
+  );
+  border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
+  animation: flicker 1.9s ease-in-out infinite;
+}
+.candle:nth-child(3n)::before {
+  animation-delay: 0.65s;
+}
+.candle:nth-child(3n + 1)::before {
+  animation-delay: 1.2s;
+}
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.18);
+  }
+}
+
+.petal {
+  display: inline-block;
+  width: 9px;
+  height: 11px;
+  background: linear-gradient(150deg, #efb7c4, #d8899e);
+  border-radius: 62% 38% 55% 45% / 60% 55% 45% 40%;
+  opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .candle::before {
+    animation: none;
+  }
+}
