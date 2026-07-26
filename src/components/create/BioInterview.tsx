@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useI18n } from "@/i18n/client";
+import type { SubjectStatus } from "@/lib/memorial/schema";
 
 /**
  * Guided-interview drafting: a few gentle questions whose answers are woven
@@ -9,10 +10,12 @@ import { useI18n } from "@/i18n/client";
  */
 export default function BioInterview({
   name,
+  status,
   hasExistingBio,
   onDraft,
 }: {
   name: string;
+  status?: SubjectStatus;
   hasExistingBio: boolean;
   onDraft: (bio: string) => void;
 }) {
@@ -43,6 +46,7 @@ export default function BioInterview({
         body: JSON.stringify({
           name: name.trim() || "TA",
           lang: locale,
+          status,
           answers: filled,
         }),
       });

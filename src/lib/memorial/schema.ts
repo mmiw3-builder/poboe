@@ -69,6 +69,12 @@ export const memorialManifestSchema = z.object({
   lang: z.string().max(10).optional(),
   subject: z.object({
     name: z.string().min(1).max(120),
+    /**
+     * Living subjects get a "life in progress" page instead of a memorial.
+     * Optional, no default: absent means deceased (all pre-v3 manifests),
+     * and a default would break old signatures.
+     */
+    status: z.enum(["living", "deceased"]).optional(),
     altName: z.string().max(120).optional(),
     born: z.string().max(40).optional(),
     died: z.string().max(40).optional(),
@@ -100,6 +106,9 @@ export const memorialManifestSchema = z.object({
 
 export type MemorialManifest = z.infer<typeof memorialManifestSchema>;
 export type UnsignedMemorialManifest = Omit<MemorialManifest, "sig">;
+export type SubjectStatus = NonNullable<
+  MemorialManifest["subject"]["status"]
+>;
 
 export const tributeSchema = z.object({
   schemaId: z.literal(SCHEMA_TRIBUTE),

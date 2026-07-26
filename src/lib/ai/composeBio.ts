@@ -38,24 +38,32 @@ async function composeBioWithClaude(
   name: string,
   answers: InterviewAnswer[],
   lang: string,
+  status?: "living" | "deceased",
 ): Promise<string | null> {
   const anthropic = getClient();
   if (!anthropic) return null;
 
   const zh = lang === "zh";
+  const living = status === "living";
   const qa = answers
     .filter((a) => a.answer.trim())
     .map((a) => `Q: ${a.question}\nA: ${a.answer.trim()}`)
     .join("\n\n");
+
+  const system = living
+    ? zh
+      ? "你是一位帮助用户撰写人物故事的写作者。根据对引导问题的回答，为一位在世的人写一篇人生故事，用于其线上人生记录空间。要求：温暖、真诚、有生命力，带着「人生仍在继续」的进行感，不堆砌辞藻，不编造回答中没有的事实；以第三人称叙述；分为 2-4 个自然段，总长 150-400 字；直接输出正文，不要标题、前言或任何说明。"
+      : "You help people write life stories. From the answers to guided questions, write the story-so-far of a living person for their online life-record space. Requirements: warm, sincere and full of life, with a sense that the story is still unfolding; do not invent facts absent from the answers; third person; 2-4 paragraphs, 120-300 words total; output only the body text with no title, preamble or commentary."
+    : zh
+      ? "你是一位帮助家属撰写纪念文字的写作者。根据家属对引导问题的回答，为逝者（或被纪念者）写一篇生平，用于线上纪念空间。要求：庄重、温暖、克制，不堆砌辞藻，不编造回答中没有的事实；以第三人称叙述；分为 2-4 个自然段，总长 150-400 字；直接输出正文，不要标题、前言或任何说明。"
+      : "You help families write memorial text. From the family's answers to guided questions, write a life story for an online memorial. Requirements: solemn, warm and restrained; do not invent facts absent from the answers; third person; 2-4 paragraphs, 120-300 words total; output only the body text with no title, preamble or commentary.";
 
   try {
     const response = await anthropic.messages.create({
       model: "claude-opus-5",
       max_tokens: 4000,
       output_config: { effort: "low" },
-      system: zh
-        ? "你是一位帮助家属撰写纪念文字的写作者。根据家属对引导问题的回答，为逝者（或被纪念者）写一篇生平，用于线上纪念空间。要求：庄重、温暖、克制，不堆砌辞藻，不编造回答中没有的事实；以第三人称叙述；分为 2-4 个自然段，总长 150-400 字；直接输出正文，不要标题、前言或任何说明。"
-        : "You help families write memorial text. From the family's answers to guided questions, write a life story for an online memorial. Requirements: solemn, warm and restrained; do not invent facts absent from the answers; third person; 2-4 paragraphs, 120-300 words total; output only the body text with no title, preamble or commentary.",
+      system,
       messages: [
         {
           role: "user",
@@ -85,8 +93,9 @@ export async function composeBio(
   name: string,
   answers: InterviewAnswer[],
   lang: string,
+  status?: "living" | "deceased",
 ): Promise<{ bio: string; source: "ai" | "template" }> {
-  const ai = await composeBioWithClaude(name, answers, lang);
+  const ai = await composeBioWithClaude(name, answers, lang, status);
   if (ai) return { bio: ai, source: "ai" };
   return {
     bio: composeBioFromTemplate(name, answers, lang),

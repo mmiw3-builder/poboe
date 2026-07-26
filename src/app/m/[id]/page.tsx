@@ -6,6 +6,7 @@ import MemorialView from "@/components/memorial/MemorialView";
 import Tributes from "@/components/memorial/Tributes";
 import { getDictionary, getLocale } from "@/i18n/server";
 import { gatewayUrlFor } from "@/lib/irys/config";
+import { lifeDates } from "@/lib/memorial/display";
 import {
   getMemorial,
   listContributions,
@@ -135,9 +136,7 @@ export default async function MemorialPage(props: PageProps<"/m/[id]">) {
         card={{
           name: manifest.subject.name,
           altName: manifest.subject.altName,
-          dates: [manifest.subject.born, manifest.subject.died]
-            .filter(Boolean)
-            .join(" — "),
+          dates: lifeDates(manifest.subject, t.memorial.present),
           epitaph: manifest.subject.epitaph,
           portraitUrl: manifest.subject.portrait
             ? gatewayUrlFor(manifest.subject.portrait.txId)

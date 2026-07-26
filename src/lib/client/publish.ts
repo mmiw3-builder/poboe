@@ -7,12 +7,14 @@ import {
   type LifeEvent,
   type MediaRef,
   type MemorialManifest,
+  type SubjectStatus,
   type UnsignedMemorialManifest,
 } from "@/lib/memorial/schema";
 import { saveKey, type StoredKey } from "./keystore";
 
 export interface MemorialDraft {
   name: string;
+  status?: SubjectStatus;
   altName?: string;
   born?: string;
   died?: string;
@@ -56,13 +58,16 @@ function toSubject(draft: MemorialDraft) {
     const t = s?.trim();
     return t ? t : undefined;
   };
+  const living = draft.status === "living";
   return {
     name: draft.name.trim(),
+    status: draft.status,
     altName: clean(draft.altName),
     born: clean(draft.born),
-    died: clean(draft.died),
+    // A living subject can never carry a closing date.
+    died: living ? undefined : clean(draft.died),
     bornDate: clean(draft.bornDate),
-    diedDate: clean(draft.diedDate),
+    diedDate: living ? undefined : clean(draft.diedDate),
     epitaph: clean(draft.epitaph),
     bio: clean(draft.bio),
     portrait: draft.portrait,

@@ -15,6 +15,8 @@
   --accent-strong: #7a5e2c;
   --accent-foreground: #ffffff;
   --halo: rgba(148, 116, 58, 0.08);
+  /* Living subjects: sage green replaces gold — a life still in progress. */
+  --life: #4d7c5f;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -28,6 +30,7 @@
     --accent-strong: #dcbd7c;
     --accent-foreground: #1c1917;
     --halo: rgba(201, 165, 92, 0.07);
+    --life: #8fbd9c;
   }
 }
 
@@ -41,6 +44,7 @@
   --color-accent-strong: var(--accent-strong);
   --color-accent-foreground: var(--accent-foreground);
   --color-halo: var(--halo);
+  --color-life: var(--life);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, "PingFang SC",
     "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
@@ -134,6 +138,30 @@ body.candlelight {
 .btn-outline:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* Living-page heartbeat: a quiet pulse next to "a life in progress". */
+.life-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--life);
+  animation: life-pulse 2.4s ease-out infinite;
+}
+@keyframes life-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--life) 45%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .life-dot {
+    animation: none;
+  }
 }
 
 /* Memory-wall entrance: tiles surface one after another. */

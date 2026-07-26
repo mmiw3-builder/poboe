@@ -2,7 +2,12 @@
 
 import Image from "next/image";
 import { useI18n } from "@/i18n/client";
-import type { LifeEvent, MediaRef } from "@/lib/memorial/schema";
+import { lifeDates } from "@/lib/memorial/display";
+import type {
+  LifeEvent,
+  MediaRef,
+  SubjectStatus,
+} from "@/lib/memorial/schema";
 
 /**
  * Shared presentational memorial ("digital gravestone"). Used both for the
@@ -12,6 +17,7 @@ import type { LifeEvent, MediaRef } from "@/lib/memorial/schema";
 
 export interface MemorialViewData {
   name: string;
+  status?: SubjectStatus;
   altName?: string;
   born?: string;
   died?: string;
@@ -57,8 +63,9 @@ export default function MemorialView({
   mediaUrls: MediaUrlMap;
 }) {
   const { t } = useI18n();
+  const living = data.status === "living";
   const resolveUrl = (ref: MediaRef) => mediaUrls[ref.txId] ?? "";
-  const dates = [data.born, data.died].filter(Boolean).join(" — ");
+  const dates = lifeDates(data, t.memorial.present);
   const paragraphs = (data.bio ?? "")
     .split(/\n+/)
     .map((p) => p.trim())
@@ -69,7 +76,11 @@ export default function MemorialView({
       {/* Stone header */}
       <header className="halo flex flex-col items-center pt-14 pb-10 text-center">
         {data.portrait && (
-          <div className="relative mb-8 h-40 w-40 overflow-hidden rounded-full ring-1 ring-accent/60 ring-offset-4 ring-offset-background sm:h-48 sm:w-48">
+          <div
+            className={`relative mb-8 h-40 w-40 overflow-hidden rounded-full ring-1 ring-offset-4 ring-offset-background sm:h-48 sm:w-48 ${
+              living ? "ring-life/60" : "ring-accent/60"
+            }`}
+          >
             <MediaImage
               src={resolveUrl(data.portrait)}
               alt={data.name}
@@ -77,9 +88,16 @@ export default function MemorialView({
             />
           </div>
         )}
-        <p className="mb-4 text-[11px] uppercase tracking-[0.35em] text-accent">
-          {t.memorial.inLivingMemory}
-        </p>
+        {living ? (
+          <p className="mb-4 flex items-center gap-2.5 text-[11px] uppercase tracking-[0.35em] text-life">
+            <span className="life-dot" aria-hidden />
+            {t.memorial.livingBadge}
+          </p>
+        ) : (
+          <p className="mb-4 text-[11px] uppercase tracking-[0.35em] text-accent">
+            {t.memorial.inLivingMemory}
+          </p>
+        )}
         <h1 className="font-serif text-4xl font-semibold leading-tight sm:text-5xl">
           {data.name}
         </h1>
@@ -94,7 +112,10 @@ export default function MemorialView({
             「{data.epitaph}」
           </p>
         )}
-        <div className="mt-10 h-px w-24 bg-accent/50" aria-hidden />
+        <div
+          className={`mt-10 h-px w-24 ${living ? "bg-life/50" : "bg-accent/50"}`}
+          aria-hidden
+        />
       </header>
 
       {/* Voice legacy */}
@@ -119,7 +140,7 @@ export default function MemorialView({
       {paragraphs.length > 0 && (
         <section className="py-10">
           <h2 className="mb-6 text-center font-serif text-2xl font-semibold">
-            {t.memorial.story}
+            {living ? t.memorial.storyLiving : t.memorial.story}
           </h2>
           <div className="space-y-5 text-[15px] leading-8 text-foreground/85">
             {paragraphs.map((p, i) => (

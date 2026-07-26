@@ -72,6 +72,9 @@ const zh = {
     voice: "TA 的声音",
     timeline: "岁月",
     inLivingMemory: "谨以此念",
+    livingBadge: "人生进行时",
+    present: "至今",
+    storyLiving: "TA 的故事",
     notFound: "未找到该纪念空间",
     notFoundBody: "链接可能有误，或内容尚在网络确认中，请稍后再试。",
     permanenceNote: "本页内容永久存储于去中心化网络，独立于本网站存续。",
@@ -244,6 +247,13 @@ const zh = {
       story: "生平与影像",
       publish: "预览与发布",
     },
+    status: {
+      label: "这是为谁而建的空间",
+      deceased: "已故 · 永恒纪念",
+      deceasedHint: "为逝去的挚爱建立永久的纪念空间",
+      living: "在世 · 人生进行时",
+      livingHint: "为自己或在世的人记录人生，随时可以继续书写",
+    },
     fields: {
       name: "姓名",
       namePlaceholder: "例如：王秀兰",
@@ -257,9 +267,14 @@ const zh = {
       diedDate: "忌日日期（用于纪念日提醒，选填）",
       epitaph: "墓志铭 / 一句话",
       epitaphPlaceholder: "例如：一生温柔，从未离开",
+      motto: "座右铭 / 一句话",
+      mottoPlaceholder: "例如：把每一天过成值得记住的样子",
       bio: "生平故事",
       bioPlaceholder:
         "写下他/她的故事：出生、经历、热爱的事物、留给后人的话……（支持换行分段）",
+      bioLiving: "人生故事",
+      bioLivingPlaceholder:
+        "写下 TA（或你自己）的故事：来处、热爱、正在经历的一切……随时可以回来继续写（支持换行分段）",
       portrait: "肖像照片",
       gallery: "相册与影像",
       caption: "说明（选填）",

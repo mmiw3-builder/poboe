@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useI18n } from "@/i18n/client";
+import { lifeDates } from "@/lib/memorial/display";
 import { tileGradientCss as tileGradient } from "@/lib/personalHue";
 
 /**
@@ -16,6 +17,7 @@ import { tileGradientCss as tileGradient } from "@/lib/personalHue";
 export interface WallPerson {
   id: string;
   name: string;
+  living?: boolean;
   altName?: string;
   born?: string;
   died?: string;
@@ -69,6 +71,11 @@ export default function MemoryWall({ people }: { people: WallPerson[] }) {
 
   const vacantCount = Math.max(0, MIN_TILES - people.length);
   const person = selected !== null ? people[selected] : null;
+  const dateLine = (p: WallPerson) =>
+    lifeDates(
+      { born: p.born, died: p.died, status: p.living ? "living" : undefined },
+      t.memorial.present,
+    );
 
   return (
     <div>
@@ -151,9 +158,9 @@ export default function MemoryWall({ people }: { people: WallPerson[] }) {
                 <span className="block truncate font-serif text-sm font-semibold">
                   {p.name}
                 </span>
-                {(p.born || p.died) && (
+                {dateLine(p) && (
                   <span className="block text-[11px] tracking-wider text-muted">
-                    {[p.born, p.died].filter(Boolean).join(" — ")}
+                    {dateLine(p)}
                   </span>
                 )}
               </span>
@@ -234,9 +241,15 @@ export default function MemoryWall({ people }: { people: WallPerson[] }) {
                 {person.altName}
               </p>
             )}
-            {(person.born || person.died) && (
+            {person.living && (
+              <p className="mt-2 flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.3em] text-life">
+                <span className="life-dot" aria-hidden />
+                {t.memorial.livingBadge}
+              </p>
+            )}
+            {dateLine(person) && (
               <p className="mt-2 text-xs tracking-[0.2em] text-muted">
-                {[person.born, person.died].filter(Boolean).join(" — ")}
+                {dateLine(person)}
               </p>
             )}
             {person.epitaph && (

@@ -18,6 +18,7 @@ import type {
   LifeEvent,
   MediaRef,
   MemorialManifest,
+  SubjectStatus,
 } from "@/lib/memorial/schema";
 import { LIMITS } from "@/lib/moderation/limits";
 
@@ -63,6 +64,10 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
   const initial = edit?.manifest;
 
   // Step 1 — basics
+  const [status, setStatus] = useState<SubjectStatus>(
+    initial?.subject.status ?? "deceased",
+  );
+  const living = status === "living";
   const [name, setName] = useState(initial?.subject.name ?? "");
   const [altName, setAltName] = useState(initial?.subject.altName ?? "");
   const [born, setBorn] = useState(initial?.subject.born ?? "");
@@ -137,11 +142,12 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
     );
     return {
       name: name.trim(),
+      status,
       altName: altName.trim() || undefined,
       born: born.trim() || undefined,
-      died: died.trim() || undefined,
+      died: status === "living" ? undefined : died.trim() || undefined,
       bornDate: bornDate || undefined,
-      diedDate: diedDate || undefined,
+      diedDate: status === "living" ? undefined : diedDate || undefined,
       epitaph: epitaph.trim() || undefined,
       bio: bio.trim() || undefined,
       portrait:
@@ -152,7 +158,7 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
       media: doneGallery.map((g) => toMediaRef(g.media, g.caption)),
       events: cleanEvents,
     };
-  }, [name, altName, born, died, bornDate, diedDate, epitaph, bio, portrait, voice, gallery, cleanEvents]);
+  }, [name, status, altName, born, died, bornDate, diedDate, epitaph, bio, portrait, voice, gallery, cleanEvents]);
 
   const previewUrls = useMemo(() => {
     const map: Record<string, string> = {};
@@ -344,6 +350,44 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
       {/* Step content */}
       {step === 0 && (
         <div className="mt-8 space-y-5">
+          <fieldset>
+            <legend className="mb-1.5 block text-sm font-medium">
+              {t.create.status.label}
+            </legend>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {(
+                [
+                  ["deceased", t.create.status.deceased, t.create.status.deceasedHint],
+                  ["living", t.create.status.living, t.create.status.livingHint],
+                ] as const
+              ).map(([value, label, hint]) => (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={status === value}
+                  onClick={() => setStatus(value)}
+                  className={`rounded-xl border px-5 py-4 text-left transition-colors ${
+                    status === value
+                      ? value === "living"
+                        ? "border-life bg-life/10"
+                        : "border-accent bg-halo"
+                      : "border-border hover:border-accent/60"
+                  }`}
+                >
+                  <span className="flex items-center gap-2 font-serif text-base font-semibold">
+                    {value === "living" && (
+                      <span className="life-dot" aria-hidden />
+                    )}
+                    {label}
+                  </span>
+                  <span className="mt-1 block text-xs leading-5 text-muted">
+                    {hint}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
           <Field label={t.create.fields.name} required>
             <input
               className="input"
@@ -372,15 +416,17 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
                 maxLength={40}
               />
             </Field>
-            <Field label={t.create.fields.died}>
-              <input
-                className="input"
-                value={died}
-                onChange={(e) => setDied(e.target.value)}
-                placeholder={t.create.fields.diedPlaceholder}
-                maxLength={40}
-              />
-            </Field>
+            {!living && (
+              <Field label={t.create.fields.died}>
+                <input
+                  className="input"
+                  value={died}
+                  onChange={(e) => setDied(e.target.value)}
+                  placeholder={t.create.fields.diedPlaceholder}
+                  maxLength={40}
+                />
+              </Field>
+            )}
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
             <Field label={t.create.fields.bornDate}>
@@ -391,21 +437,29 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
                 onChange={(e) => setBornDate(e.target.value)}
               />
             </Field>
-            <Field label={t.create.fields.diedDate}>
-              <input
-                type="date"
-                className="input"
-                value={diedDate}
-                onChange={(e) => setDiedDate(e.target.value)}
-              />
-            </Field>
+            {!living && (
+              <Field label={t.create.fields.diedDate}>
+                <input
+                  type="date"
+                  className="input"
+                  value={diedDate}
+                  onChange={(e) => setDiedDate(e.target.value)}
+                />
+              </Field>
+            )}
           </div>
-          <Field label={t.create.fields.epitaph}>
+          <Field
+            label={living ? t.create.fields.motto : t.create.fields.epitaph}
+          >
             <input
               className="input"
               value={epitaph}
               onChange={(e) => setEpitaph(e.target.value)}
-              placeholder={t.create.fields.epitaphPlaceholder}
+              placeholder={
+                living
+                  ? t.create.fields.mottoPlaceholder
+                  : t.create.fields.epitaphPlaceholder
+              }
               maxLength={200}
             />
           </Field>
@@ -485,16 +539,23 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
 
       {step === 1 && (
         <div className="mt-8 space-y-5">
-          <Field label={t.create.fields.bio}>
+          <Field
+            label={living ? t.create.fields.bioLiving : t.create.fields.bio}
+          >
             <textarea
               className="input min-h-56"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder={t.create.fields.bioPlaceholder}
+              placeholder={
+                living
+                  ? t.create.fields.bioLivingPlaceholder
+                  : t.create.fields.bioPlaceholder
+              }
               maxLength={20000}
             />
             <BioInterview
               name={name}
+              status={status}
               hasExistingBio={Boolean(bio.trim())}
               onDraft={(draft) => setBio(draft)}
             />

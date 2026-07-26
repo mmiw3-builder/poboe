@@ -126,6 +126,7 @@ describe("schema v2 signature compatibility", () => {
     const parsed = memorialManifestSchema.parse(wire);
     expect(parsed.events).toBeUndefined();
     expect(parsed.approvedContributions).toBeUndefined();
+    expect(parsed.subject.status).toBeUndefined();
     expect(verifyManifest(parsed)).toBe(true);
   });
 
@@ -151,6 +152,25 @@ describe("schema v2 signature compatibility", () => {
       JSON.parse(JSON.stringify(signed)),
     );
     expect(parsed.events).toHaveLength(1);
+    expect(verifyManifest(parsed)).toBe(true);
+  });
+
+  it("signs and verifies a living-subject manifest (v3 status field)", () => {
+    const kp = generateKeyPair();
+    const unsigned = {
+      ...makeUnsignedManifest(kp.publicKey, "abcd1234"),
+      subject: {
+        name: "测试者",
+        status: "living" as const,
+        born: "1990年",
+        epitaph: "把每一天过成值得记住的样子",
+      },
+    };
+    const signed = signManifest(unsigned, kp.secretKey);
+    const parsed = memorialManifestSchema.parse(
+      JSON.parse(JSON.stringify(signed)),
+    );
+    expect(parsed.subject.status).toBe("living");
     expect(verifyManifest(parsed)).toBe(true);
   });
 });

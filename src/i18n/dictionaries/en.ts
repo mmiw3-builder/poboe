@@ -70,6 +70,9 @@ const en: Dictionary = {
     voice: "In their voice",
     timeline: "Through the Years",
     inLivingMemory: "In loving memory",
+    livingBadge: "A life in progress",
+    present: "present",
+    storyLiving: "The Story So Far",
     notFound: "Memorial not found",
     notFoundBody:
       "The link may be incorrect, or the content is still propagating — please try again shortly.",
@@ -251,6 +254,14 @@ const en: Dictionary = {
       story: "Life & Media",
       publish: "Preview & Publish",
     },
+    status: {
+      label: "Who is this space for",
+      deceased: "In memoriam",
+      deceasedHint: "Build a permanent memorial for a loved one who has passed",
+      living: "Living · a life in progress",
+      livingHint:
+        "Chronicle your own life or someone still here — keep writing any time",
+    },
     fields: {
       name: "Name",
       namePlaceholder: "e.g. Mary Chen",
@@ -264,9 +275,14 @@ const en: Dictionary = {
       diedDate: "Date of passing (for anniversary reminders, optional)",
       epitaph: "Epitaph / one line",
       epitaphPlaceholder: "e.g. Gentle in life, never truly gone",
+      motto: "Motto / one line",
+      mottoPlaceholder: "e.g. Make every day worth remembering",
       bio: "Life story",
       bioPlaceholder:
         "Tell their story: where they came from, what they loved, what they leave behind… (paragraphs supported)",
+      bioLiving: "Life story so far",
+      bioLivingPlaceholder:
+        "Tell their story — or your own: where it began, what you love, what is unfolding now… come back and keep writing any time (paragraphs supported)",
       portrait: "Portrait photo",
       gallery: "Photos & video",
       caption: "Caption (optional)",

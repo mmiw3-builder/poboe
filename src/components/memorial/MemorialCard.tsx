@@ -1,16 +1,20 @@
 import Image from "next/image";
 import Link from "next/link";
+import { getDictionary, getLocale } from "@/i18n/server";
 import { gatewayUrlFor } from "@/lib/irys/config";
+import { lifeDates } from "@/lib/memorial/display";
 import type { MemorialManifest } from "@/lib/memorial/schema";
 
 /** Compact gallery card — pure server component. */
-export default function MemorialCard({
+export default async function MemorialCard({
   manifest,
 }: {
   manifest: MemorialManifest;
 }) {
+  const t = getDictionary(await getLocale());
   const { subject } = manifest;
-  const dates = [subject.born, subject.died].filter(Boolean).join(" — ");
+  const living = subject.status === "living";
+  const dates = lifeDates(subject, t.memorial.present);
 
   return (
     <Link
@@ -32,7 +36,8 @@ export default function MemorialCard({
           {subject.name.slice(0, 1)}
         </span>
       )}
-      <h3 className="font-serif text-lg font-semibold leading-snug">
+      <h3 className="flex items-center gap-2 font-serif text-lg font-semibold leading-snug">
+        {living && <span className="life-dot" aria-hidden />}
         {subject.name}
       </h3>
       {dates && (

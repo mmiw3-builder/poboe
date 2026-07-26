@@ -12,6 +12,7 @@ export const maxDuration = 60;
 const requestSchema = z.object({
   name: z.string().min(1).max(120),
   lang: z.enum(["zh", "en"]),
+  status: z.enum(["living", "deceased"]).optional(),
   answers: z
     .array(
       z.object({
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
   const parsed = requestSchema.safeParse(body);
   if (!parsed.success) return errors.badRequest("Invalid interview payload.");
 
-  const { name, lang, answers } = parsed.data;
+  const { name, lang, status, answers } = parsed.data;
   const filled = answers.filter((a) => a.answer.trim());
   if (filled.length === 0) {
     return errors.badRequest("At least one answer is required.");
@@ -49,6 +50,6 @@ export async function POST(req: NextRequest) {
   const verdict = await moderateText([name, ...filled.map((a) => a.answer)]);
   if (!verdict.ok) return errors.rejected(verdict.reasons);
 
-  const result = await composeBio(name, filled, lang);
+  const result = await composeBio(name, filled, lang, status);
   return ok(result);
 }

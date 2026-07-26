@@ -41,6 +41,7 @@ export default async function Home() {
     people = items.map(({ manifest }) => ({
       id: manifest.id,
       name: manifest.subject.name,
+      living: manifest.subject.status === "living",
       altName: manifest.subject.altName,
       born: manifest.subject.born,
       died: manifest.subject.died,
