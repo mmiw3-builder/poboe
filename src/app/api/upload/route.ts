@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { errors, ok } from "@/lib/api/respond";
+import { userFromRequest } from "@/lib/auth/session";
 import { getAppTag } from "@/lib/irys/config";
 import { uploadBuffer } from "@/lib/irys/server";
 import { LIMITS, isAllowedMediaType, maxBytesFor } from "@/lib/moderation/limits";
@@ -16,9 +17,12 @@ export const maxDuration = 60;
  * txIds; media itself needs no index tags.
  */
 export async function POST(req: NextRequest) {
+  const user = await userFromRequest(req);
+  if (!user) return errors.unauthorized();
+
   const limited = rateLimit(
     "upload",
-    clientKeyFromHeaders(req.headers),
+    user.id,
     LIMITS.uploadsPerHour,
   );
   if (!limited.allowed) return errors.rateLimited();

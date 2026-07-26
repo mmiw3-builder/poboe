@@ -1,5 +1,7 @@
 import type { NextRequest } from "next/server";
 import { errors, ok } from "@/lib/api/respond";
+import { userFromRequest } from "@/lib/auth/session";
+import { db, schema } from "@/lib/db";
 import { getAppTag } from "@/lib/irys/config";
 import { uploadJson } from "@/lib/irys/server";
 import { verifyManifest } from "@/lib/memorial/identity";
@@ -27,9 +29,12 @@ export async function GET(req: NextRequest) {
  * then funds the permanent upload.
  */
 export async function POST(req: NextRequest) {
+  const user = await userFromRequest(req);
+  if (!user) return errors.unauthorized();
+
   const limited = rateLimit(
     "publish",
-    clientKeyFromHeaders(req.headers),
+    user.id,
     LIMITS.publishesPerHour,
   );
   if (!limited.allowed) return errors.rateLimited();
@@ -86,6 +91,16 @@ export async function POST(req: NextRequest) {
       { name: TAGS.type, value: "memorial" },
       { name: TAGS.memorialId, value: manifest.id },
     ]);
+    // Link the memorial to the account (idempotent).
+    await db()
+      .insert(schema.userMemorials)
+      .values({
+        userId: user.id,
+        memorialId: manifest.id,
+        createdAt: Date.now(),
+      })
+      .onConflictDoNothing()
+      .catch(() => {});
     return ok({ txId: result.id, id: manifest.id, version: manifest.version });
   } catch (err) {
     console.error("memorial publish failed:", err);

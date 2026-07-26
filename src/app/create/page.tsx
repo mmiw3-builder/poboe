@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import LoginGate from "@/components/auth/LoginGate";
 import CreateFlow from "@/components/create/CreateFlow";
 import { getDictionary, getLocale } from "@/i18n/server";
 
@@ -10,7 +11,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function CreatePage() {
   return (
     <main className="flex-1">
-      <CreateFlow />
+      <LoginGate>
+        <CreateFlow />
+      </LoginGate>
     </main>
   );
 }

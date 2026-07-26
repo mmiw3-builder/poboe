@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { errors, ok } from "@/lib/api/respond";
 import { composeBio } from "@/lib/ai/composeBio";
+import { userFromRequest } from "@/lib/auth/session";
 import { clientKeyFromHeaders, rateLimit } from "@/lib/moderation/rateLimit";
 import { moderateText } from "@/lib/moderation/text";
 
@@ -24,11 +25,10 @@ const requestSchema = z.object({
 
 /** Guided-interview bio drafting. Nothing is stored — the draft goes back to the client editor. */
 export async function POST(req: NextRequest) {
-  const limited = rateLimit(
-    "compose",
-    clientKeyFromHeaders(req.headers),
-    20,
-  );
+  const user = await userFromRequest(req);
+  if (!user) return errors.unauthorized();
+
+  const limited = rateLimit("compose", user.id, 20);
   if (!limited.allowed) return errors.rateLimited();
 
   let body: unknown;
