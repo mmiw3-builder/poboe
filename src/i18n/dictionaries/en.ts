@@ -196,6 +196,27 @@ const en: Dictionary = {
       timelineDetail: "Detail (optional)",
       addEvent: "Add a moment",
     },
+    interview: {
+      open: "Not sure how to write it? Try guided writing",
+      title: "Guided writing",
+      intro:
+        "Answer a few small questions (any subset is fine) and we'll weave them into a first draft you can freely edit.",
+      questions: {
+        q1: "Where and when were they born? What was their hometown like?",
+        q2: "What filled their life? (work, family, journeys)",
+        q3: "What did they love most, or never stop doing?",
+        q4: "A phrase they always used to say?",
+        q5: "One moment with them you will never forget?",
+        q6: "What do you want future generations to remember about them?",
+      },
+      answerPlaceholder: "Write whatever comes to mind — fragments are fine…",
+      generate: "Draft the life story",
+      generating: "Writing…",
+      applied: "Draft filled in — polish it as you like",
+      needOne: "Please answer at least one question",
+      failed: "Drafting failed — please try again later",
+      replaceWarning: "The draft will replace the current life story text",
+    },
     upload: {
       addPortrait: "Choose portrait",
       addMedia: "Add photo / video",

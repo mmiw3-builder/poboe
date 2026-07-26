@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
+import BioInterview from "@/components/create/BioInterview";
 import MemorialView from "@/components/memorial/MemorialView";
 import { useI18n } from "@/i18n/client";
 import { uploadMedia, type UploadedMedia } from "@/lib/client/media";
@@ -448,6 +449,11 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
               onChange={(e) => setBio(e.target.value)}
               placeholder={t.create.fields.bioPlaceholder}
               maxLength={20000}
+            />
+            <BioInterview
+              name={name}
+              hasExistingBio={Boolean(bio.trim())}
+              onDraft={(draft) => setBio(draft)}
             />
           </Field>
 

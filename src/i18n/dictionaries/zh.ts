@@ -193,6 +193,27 @@ const zh = {
       timelineDetail: "细节（选填）",
       addEvent: "添加一段经历",
     },
+    interview: {
+      open: "不知道怎么写？试试引导式写作",
+      title: "引导式写作",
+      intro:
+        "回答几个小问题（可以只答一部分），我们帮您把它们连缀成一篇生平初稿，生成后可以随意修改。",
+      questions: {
+        q1: "TA 出生在哪里、哪一年？家乡是什么样的？",
+        q2: "TA 的一生主要做了什么？（工作、家庭、经历）",
+        q3: "TA 最热爱的事物或坚持的习惯是什么？",
+        q4: "TA 常挂在嘴边的一句话？",
+        q5: "您与 TA 之间最难忘的一个瞬间？",
+        q6: "您希望后人记住 TA 的什么？",
+      },
+      answerPlaceholder: "想到什么写什么，不必完整…",
+      generate: "生成生平初稿",
+      generating: "正在撰写…",
+      applied: "已填入生平，请继续润色",
+      needOne: "请至少回答一个问题",
+      failed: "生成失败，请稍后再试",
+      replaceWarning: "生成的初稿将替换当前生平内容",
+    },
     upload: {
       addPortrait: "选择肖像",
       addMedia: "添加照片 / 视频",

@@ -11,6 +11,7 @@
     "generate-admin-key": "node scripts/generate-admin-key.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.115.0",
     "@irys/upload": "^0.0.15",
     "@irys/upload-ethereum": "^0.0.16",
     "@noble/ed25519": "^3.1.0",
