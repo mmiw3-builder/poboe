@@ -35,6 +35,7 @@ const en: Dictionary = {
     faq: "FAQ",
     terms: "Terms",
     report: "Report content",
+    permanence: "Verify the data",
   },
   home: {
     heroTitle: "Some people deserve to be remembered forever",
@@ -105,6 +106,37 @@ const en: Dictionary = {
     prev: "Previous",
     next: "Next",
     close: "Close",
+  },
+  permanence: {
+    title: "Verify the Data",
+    subtitle: "You don't have to trust us — check it yourself",
+    intro:
+      "Every Evermark space is a signed manifest document stored permanently on a decentralized network (Irys / Arweave). This page lets you verify it independently, in your own browser: the data exists, it is signed by its owner, and nobody — including us — can alter it.",
+    how: {
+      title: "How it works",
+      p1: "Each space has an Ed25519 key that only its creator holds, kept in their browser. The space ID is derived from the public key, so nobody can publish in its name without the secret key.",
+      p2: "Every publish is a signed JSON document written permanently to the storage network. Newer valid versions supersede older ones for display, but every historical version stays readable and immutable forever.",
+      p3: "Even if this website disappears one day, the data remains. Anyone can read the manifest from a public gateway, check the signature, and rebuild the space in full.",
+    },
+    verify: {
+      title: "Verify online",
+      placeholder: "Paste a space ID, e.g. qLzgpb6x66RTw4-b2vekxw",
+      button: "Verify",
+      checking: "Verifying…",
+      idCheck: "Space ID matches the owner's public key",
+      sigCheck: "Owner signature valid — content untampered",
+      version: "Current version",
+      owner: "Owner public key",
+      txId: "On-chain transaction",
+      viewRaw: "View raw on-chain data",
+      export: "Download full archive",
+      notFound: "Space not found — please check the ID",
+      failed: "Verification failed — the data may have been tampered with",
+    },
+    diy: {
+      title: "Verify offline yourself",
+      body: "The full archive contains the manifest and permanent links to all media. Any Ed25519 library can check it independently: drop the sig field, serialize the JSON with sorted keys, and verify the signature against manifest.ownerPubKey; the space ID must equal the first 22 chars of base64url(sha256(pubkey + \":\" + nonce)).",
+    },
   },
   universe: {
     hint: "Drag to roam · scroll or pinch to zoom",

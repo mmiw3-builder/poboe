@@ -37,6 +37,7 @@ const zh = {
     faq: "常见问题",
     terms: "服务条款",
     report: "举报内容",
+    permanence: "数据自证",
   },
   home: {
     heroTitle: "有些人，值得被永远记住",
@@ -105,6 +106,37 @@ const zh = {
     prev: "上一位",
     next: "下一位",
     close: "关闭",
+  },
+  permanence: {
+    title: "数据自证",
+    subtitle: "不需要相信我们——你可以亲自验证",
+    intro:
+      "永铭的每一个空间都是一份带签名的 manifest 文档，永久存储在去中心化网络（Irys / Arweave）上。这一页让你在自己的浏览器里独立验证：数据真实存在、由所有者签名、无人可以篡改——包括我们。",
+    how: {
+      title: "它如何工作",
+      p1: "每个空间都有一把只属于创建者、保存在其浏览器中的 Ed25519 密钥。空间 ID 由公钥推导而来，没有私钥就无法冒名发布。",
+      p2: "每次发布都是一份签名 JSON 文档，永久写入存储网络。较新的有效版本会取代旧版本展示，但每个历史版本都永远可查、不可更改。",
+      p3: "即使本网站有一天消失，数据仍然还在。任何人都可以从公开网关读取 manifest、校验签名，并完整重建这个空间。",
+    },
+    verify: {
+      title: "在线验证",
+      placeholder: "粘贴空间 ID，例如 qLzgpb6x66RTw4-b2vekxw",
+      button: "验证",
+      checking: "验证中…",
+      idCheck: "空间 ID 与所有者公钥匹配",
+      sigCheck: "所有者签名有效，内容未被篡改",
+      version: "当前版本",
+      owner: "所有者公钥",
+      txId: "链上交易",
+      viewRaw: "查看链上原始数据",
+      export: "下载完整存档",
+      notFound: "未找到该空间，请检查 ID",
+      failed: "验证未通过——数据可能已被篡改",
+    },
+    diy: {
+      title: "自行离线验证",
+      body: "完整存档包含 manifest 与全部媒体的永久链接。用任意 Ed25519 库即可独立校验：去除 sig 字段、按键名排序序列化 JSON，再用 manifest.ownerPubKey 验证签名；空间 ID 应等于 base64url(sha256(公钥 + \":\" + nonce)) 的前 22 位。",
+    },
   },
   universe: {
     hint: "拖动漫游 · 滚轮或双指缩放",

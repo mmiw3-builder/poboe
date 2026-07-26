@@ -23,6 +23,9 @@ export default function Footer() {
           <Link className="hover:text-accent" href="/about#faq">
             {t.footer.faq}
           </Link>
+          <Link className="hover:text-accent" href="/permanence">
+            {t.footer.permanence}
+          </Link>
           <Link className="hover:text-accent" href="/about#terms">
             {t.footer.terms}
           </Link>
