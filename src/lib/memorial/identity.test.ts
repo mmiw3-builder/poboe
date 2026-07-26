@@ -113,6 +113,48 @@ describe("memorial identity", () => {
   });
 });
 
+describe("schema v2 signature compatibility", () => {
+  it("keeps verifying v1-era manifests (no events/dates/voice fields)", () => {
+    const kp = generateKeyPair();
+    // Exactly what the v1 client produced — no v2 fields at all.
+    const signed = signManifest(
+      makeUnsignedManifest(kp.publicKey, "abcd1234"),
+      kp.secretKey,
+    );
+    const wire = JSON.parse(JSON.stringify(signed));
+    // Read path: parse then verify. Parsing must NOT inject new fields.
+    const parsed = memorialManifestSchema.parse(wire);
+    expect(parsed.events).toBeUndefined();
+    expect(parsed.approvedContributions).toBeUndefined();
+    expect(verifyManifest(parsed)).toBe(true);
+  });
+
+  it("signs and verifies manifests carrying the v2 fields", () => {
+    const kp = generateKeyPair();
+    const unsigned = {
+      ...makeUnsignedManifest(kp.publicKey, "abcd1234"),
+      events: [{ year: "1936", title: "生于江南", detail: "水乡人家" }],
+      approvedContributions: ["A".repeat(43)],
+      subject: {
+        name: "测试者",
+        bornDate: "1936-03",
+        diedDate: "2024-01-15",
+        voice: {
+          txId: "B".repeat(43),
+          kind: "audio" as const,
+          contentType: "audio/mpeg",
+        },
+      },
+    };
+    const signed = signManifest(unsigned, kp.secretKey);
+    const parsed = memorialManifestSchema.parse(
+      JSON.parse(JSON.stringify(signed)),
+    );
+    expect(parsed.events).toHaveLength(1);
+    expect(verifyManifest(parsed)).toBe(true);
+  });
+});
+
 describe("moderation records", () => {
   it("verifies only against the trusted admin key", () => {
     const admin = generateKeyPair();

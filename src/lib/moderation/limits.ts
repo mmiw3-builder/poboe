@@ -8,11 +8,21 @@ export const LIMITS = {
   maxImageBytes: 3_500_000,
   /** Per uploaded video clip. Larger videos need the delegated-payment path (future). */
   maxVideoBytes: 3_500_000,
+  /** Per uploaded voice clip. */
+  maxAudioBytes: 3_500_000,
   /** Gallery size per memorial. */
   maxMediaCount: 12,
   maxManifestBytes: 100_000,
   allowedImageTypes: ["image/jpeg", "image/png", "image/webp", "image/avif"],
   allowedVideoTypes: ["video/mp4", "video/webm"],
+  allowedAudioTypes: [
+    "audio/mpeg",
+    "audio/mp4",
+    "audio/x-m4a",
+    "audio/wav",
+    "audio/ogg",
+    "audio/webm",
+  ],
   /** Sliding-window rate limits, per client IP. */
   uploadsPerHour: 40,
   publishesPerHour: 10,
@@ -22,12 +32,21 @@ export const LIMITS = {
 
 export function isAllowedMediaType(
   contentType: string,
-): "image" | "video" | null {
+): "image" | "video" | "audio" | null {
   if ((LIMITS.allowedImageTypes as readonly string[]).includes(contentType)) {
     return "image";
   }
   if ((LIMITS.allowedVideoTypes as readonly string[]).includes(contentType)) {
     return "video";
   }
+  if ((LIMITS.allowedAudioTypes as readonly string[]).includes(contentType)) {
+    return "audio";
+  }
   return null;
+}
+
+export function maxBytesFor(kind: "image" | "video" | "audio"): number {
+  if (kind === "image") return LIMITS.maxImageBytes;
+  if (kind === "video") return LIMITS.maxVideoBytes;
+  return LIMITS.maxAudioBytes;
 }

@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { errors, ok } from "@/lib/api/respond";
 import { getAppTag } from "@/lib/irys/config";
 import { uploadBuffer } from "@/lib/irys/server";
-import { LIMITS, isAllowedMediaType } from "@/lib/moderation/limits";
+import { LIMITS, isAllowedMediaType, maxBytesFor } from "@/lib/moderation/limits";
 import { clientKeyFromHeaders, rateLimit } from "@/lib/moderation/rateLimit";
 import { TAGS } from "@/lib/memorial/schema";
 
@@ -40,11 +40,11 @@ export async function POST(req: NextRequest) {
       `Unsupported content type "${file.type}". Allowed: ${[
         ...LIMITS.allowedImageTypes,
         ...LIMITS.allowedVideoTypes,
+        ...LIMITS.allowedAudioTypes,
       ].join(", ")}`,
     );
   }
-  const maxBytes =
-    kind === "image" ? LIMITS.maxImageBytes : LIMITS.maxVideoBytes;
+  const maxBytes = maxBytesFor(kind);
   if (file.size > maxBytes) {
     return errors.tooLarge(
       `File is ${file.size} bytes; the limit for ${kind} is ${maxBytes}.`,
