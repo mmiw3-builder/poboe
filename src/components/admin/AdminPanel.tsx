@@ -38,10 +38,14 @@ export default function AdminPanel() {
   const [manualId, setManualId] = useState("");
 
   useEffect(() => {
-    const saved = sessionStorage.getItem("poboe_admin_token");
-    if (saved) {
-      setToken(saved);
-    }
+    let cancelled = false;
+    queueMicrotask(() => {
+      const saved = sessionStorage.getItem("poboe_admin_token");
+      if (saved && !cancelled) setToken(saved);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const load = useCallback(

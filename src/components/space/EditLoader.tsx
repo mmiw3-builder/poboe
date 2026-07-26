@@ -51,7 +51,9 @@ export default function EditLoader({ memorialId }: { memorialId: string }) {
   }
 
   useEffect(() => {
-    void load();
+    // Deferred so the synchronous keystore lookup inside load() never
+    // triggers a setState during the effect body itself.
+    queueMicrotask(() => void load());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [memorialId]);
 

@@ -13,7 +13,14 @@ export default function SpaceList() {
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setKeys(listKeys());
+    let cancelled = false;
+    // Deferred: localStorage is read after hydration to keep SSR output stable.
+    queueMicrotask(() => {
+      if (!cancelled) setKeys(listKeys());
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   function handleImport(file: File) {
