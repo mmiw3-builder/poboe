@@ -12,6 +12,7 @@ export const SCHEMA_MODERATION = "poboe/moderation@1";
 export const SCHEMA_REPORT = "poboe/report@1";
 export const SCHEMA_CONTRIBUTION = "poboe/contribution@1";
 export const SCHEMA_TRANSITION = "poboe/transition@1";
+export const SCHEMA_ENTRY = "poboe/entry@1";
 
 /** Irys tag names/values used to index records. */
 export const TAGS = {
@@ -29,7 +30,8 @@ export type RecordType =
   | "moderation"
   | "report"
   | "contribution"
-  | "transition";
+  | "transition"
+  | "entry";
 
 const base64Url = /^[A-Za-z0-9_-]+$/;
 
@@ -126,7 +128,7 @@ export type Tribute = z.infer<typeof tributeSchema>;
 export const moderationRecordSchema = z.object({
   schemaId: z.literal(SCHEMA_MODERATION),
   action: z.enum(["hide", "unhide"]),
-  targetType: z.enum(["memorial", "tribute", "contribution"]),
+  targetType: z.enum(["memorial", "tribute", "contribution", "entry"]),
   /** memorialId for memorials, Irys txId for tributes */
   targetId: z.string().min(1).max(100),
   reason: z.string().max(500).optional(),
@@ -168,6 +170,25 @@ export const transitionRecordSchema = z.object({
 });
 
 export type TransitionRecord = z.infer<typeof transitionRecordSchema>;
+
+/**
+ * A journal entry (时光记录): a lightweight moment — text and/or photos —
+ * signed by the memorial's owner key. Entries let a space grow over time
+ * without republishing the whole manifest.
+ */
+export const journalEntrySchema = z.object({
+  schemaId: z.literal(SCHEMA_ENTRY),
+  memorialId: z.string().min(10).max(40).regex(base64Url),
+  /** Must equal the memorial manifest's ownerPubKey (checked on read). */
+  ownerPubKey: z.string().min(40).max(50).regex(base64Url),
+  text: z.string().max(5000).optional(),
+  media: z.array(mediaRefSchema).max(9).optional(),
+  createdAt: z.number().int().positive(),
+  sig: z.string().min(80).max(100).regex(base64Url),
+});
+
+export type JournalEntry = z.infer<typeof journalEntrySchema>;
+export type UnsignedJournalEntry = Omit<JournalEntry, "sig">;
 
 export const reportSchema = z.object({
   schemaId: z.literal(SCHEMA_REPORT),

@@ -106,6 +106,23 @@ const en: Dictionary = {
     next: "Next",
     close: "Close",
   },
+  journal: {
+    title: "Moments",
+    composerPlaceholder:
+      "Capture this moment — a few words or photos, kept forever",
+    addPhotos: "Add photos",
+    publish: "Publish",
+    publishing: "Publishing…",
+    published: "Published — permanently stored",
+    empty: "No moments yet",
+    ownerHint:
+      "Each moment is signed with the space's key and written permanently to the storage network — it cannot be deleted or altered.",
+    needContent: "Write something or add a photo",
+    failed: "Publish failed — please try again",
+    rejected: "The content did not pass moderation — please revise",
+    photoFailed: "Photo upload failed",
+    signInRequired: "Please sign in before publishing",
+  },
   watch: {
     title: "The Watch",
     subtitle: "A quiet arrangement for a life-in-progress space",

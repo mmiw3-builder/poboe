@@ -2,6 +2,7 @@ import { getAppTag } from "../irys/config";
 import { fetchTxJson, queryTransactions, tagValue } from "../irys/query";
 import { publicKeyOf } from "../crypto";
 import {
+  verifyJournalEntry,
   verifyManifest,
   verifyModerationRecord,
   verifyTransitionRecord,
@@ -9,11 +10,13 @@ import {
 import {
   TAGS,
   contributionSchema,
+  journalEntrySchema,
   memorialManifestSchema,
   moderationRecordSchema,
   transitionRecordSchema,
   tributeSchema,
   type Contribution,
+  type JournalEntry,
   type MemorialManifest,
   type ModerationRecord,
   type TransitionRecord,
@@ -33,7 +36,8 @@ function baseTags(
     | "moderation"
     | "report"
     | "contribution"
-    | "transition",
+    | "transition"
+    | "entry",
 ) {
   return [
     { name: TAGS.appName, values: [getAppTag()] },
@@ -55,6 +59,7 @@ export interface ModerationState {
   hiddenMemorials: Set<string>;
   hiddenTributes: Set<string>;
   hiddenContributions: Set<string>;
+  hiddenEntries: Set<string>;
 }
 
 /** Replay signed hide/unhide records (oldest first) into the current state. */
@@ -63,6 +68,7 @@ export async function getModerationState(): Promise<ModerationState> {
     hiddenMemorials: new Set(),
     hiddenTributes: new Set(),
     hiddenContributions: new Set(),
+    hiddenEntries: new Set(),
   };
   const adminPubKey = getAdminPublicKey();
   if (!adminPubKey) return state;
@@ -85,7 +91,9 @@ export async function getModerationState(): Promise<ModerationState> {
         ? state.hiddenMemorials
         : parsed.data.targetType === "tribute"
           ? state.hiddenTributes
-          : state.hiddenContributions;
+          : parsed.data.targetType === "entry"
+            ? state.hiddenEntries
+            : state.hiddenContributions;
     if (parsed.data.action === "hide") set.add(parsed.data.targetId);
     else set.delete(parsed.data.targetId);
   }
@@ -219,6 +227,47 @@ export async function listMemorials(options: {
     endCursor: page.endCursor,
     hasNextPage: page.hasNextPage,
   };
+}
+
+export interface JournalEntryItem {
+  entry: JournalEntry;
+  txId: string;
+}
+
+/**
+ * Verified journal entries for a memorial, newest first. Only entries
+ * signed by the memorial's owner key are trusted.
+ */
+export async function listEntries(
+  memorialId: string,
+  ownerPubKey: string,
+  options: { limit?: number } = {},
+): Promise<JournalEntryItem[]> {
+  const [page, moderation] = await Promise.all([
+    queryTransactions({
+      tags: [
+        ...baseTags("entry"),
+        { name: TAGS.memorialId, values: [memorialId] },
+      ],
+      first: options.limit ?? 100,
+      order: "DESC",
+      revalidate: 15,
+    }),
+    getModerationState(),
+  ]);
+  const parsed = await Promise.all(
+    page.nodes.map(async (node) => {
+      if (moderation.hiddenEntries.has(node.id)) return null;
+      const raw = await fetchTxJson(node.id);
+      const result = journalEntrySchema.safeParse(raw);
+      if (!result.success || result.data.memorialId !== memorialId) return null;
+      if (!verifyJournalEntry(result.data, ownerPubKey)) return null;
+      return { entry: result.data, txId: node.id };
+    }),
+  );
+  return parsed
+    .filter((x): x is JournalEntryItem => x !== null)
+    .sort((a, b) => b.entry.createdAt - a.entry.createdAt);
 }
 
 export interface ContributionItem {

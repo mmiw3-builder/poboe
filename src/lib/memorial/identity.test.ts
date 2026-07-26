@@ -4,17 +4,21 @@ import { base64UrlToBytes, bytesToBase64Url } from "../codec";
 import { generateKeyPair, publicKeyOf, signMessage, verifyMessage } from "../crypto";
 import {
   deriveMemorialId,
+  signJournalEntry,
   signManifest,
   signModerationRecord,
   signTransitionRecord,
+  verifyJournalEntry,
   verifyManifest,
   verifyModerationRecord,
   verifyTransitionRecord,
 } from "./identity";
 import {
+  SCHEMA_ENTRY,
   SCHEMA_MEMORIAL,
   SCHEMA_MODERATION,
   SCHEMA_TRANSITION,
+  journalEntrySchema,
   memorialManifestSchema,
   transitionRecordSchema,
   type MemorialManifest,
@@ -176,6 +180,34 @@ describe("schema v2 signature compatibility", () => {
     );
     expect(parsed.subject.status).toBe("living");
     expect(verifyManifest(parsed)).toBe(true);
+  });
+});
+
+describe("journal entries", () => {
+  it("verifies only entries signed by the memorial's own key", () => {
+    const owner = generateKeyPair();
+    const attacker = generateKeyPair();
+    const entry = signJournalEntry(
+      {
+        schemaId: SCHEMA_ENTRY,
+        memorialId: "qLzgpb6x66RTw4-b2vekxw",
+        ownerPubKey: owner.publicKey,
+        text: "今天阳光很好。",
+        createdAt: 1700000000000,
+      },
+      owner.secretKey,
+    );
+    const parsed = journalEntrySchema.parse(JSON.parse(JSON.stringify(entry)));
+    expect(verifyJournalEntry(parsed, owner.publicKey)).toBe(true);
+    // Wrong expected owner (forged claim on someone else's memorial).
+    expect(verifyJournalEntry(parsed, attacker.publicKey)).toBe(false);
+    // Attacker signs with their own key while claiming the owner's pubkey.
+    const { sig: _sig, ...unsigned } = parsed;
+    const forged = signJournalEntry(unsigned, attacker.secretKey);
+    expect(verifyJournalEntry(forged, owner.publicKey)).toBe(false);
+    // Tampered text.
+    const tampered = { ...parsed, text: "被篡改" };
+    expect(verifyJournalEntry(tampered, owner.publicKey)).toBe(false);
   });
 });
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ContributedMemories from "@/components/memorial/ContributedMemories";
+import Journal from "@/components/memorial/Journal";
 import MemorialActions from "@/components/memorial/MemorialActions";
 import MemorialView from "@/components/memorial/MemorialView";
 import Tributes from "@/components/memorial/Tributes";
@@ -11,6 +12,7 @@ import {
   getMemorial,
   getTransition,
   listContributions,
+  listEntries,
   listTributes,
 } from "@/lib/memorial/repo";
 import type { MemorialManifest } from "@/lib/memorial/schema";
@@ -86,7 +88,7 @@ export default async function MemorialPage(props: PageProps<"/m/[id]">) {
 
   const { manifest, txId } = result;
   const approvedSet = new Set(manifest.approvedContributions ?? []);
-  const [tributes, contributions, transition] = await Promise.all([
+  const [tributes, contributions, transition, entries] = await Promise.all([
     listTributes(id, { limit: 100 }),
     approvedSet.size > 0 || manifest.tributesEnabled
       ? listContributions(id)
@@ -96,7 +98,14 @@ export default async function MemorialPage(props: PageProps<"/m/[id]">) {
     manifest.subject.status === "living"
       ? getTransition(id)
       : Promise.resolve(null),
+    listEntries(id, manifest.ownerPubKey),
   ]);
+  const entryMediaUrls: Record<string, string> = {};
+  for (const item of entries) {
+    for (const ref of item.entry.media ?? []) {
+      entryMediaUrls[ref.txId] = gatewayUrlFor(ref.txId);
+    }
+  }
   const effectiveSubject = transition
     ? { ...manifest.subject, status: "deceased" as const }
     : manifest.subject;
@@ -125,6 +134,12 @@ export default async function MemorialPage(props: PageProps<"/m/[id]">) {
           {t.watch.transitionNotice}
         </p>
       )}
+
+      <Journal
+        memorialId={id}
+        initialItems={entries}
+        mediaUrls={entryMediaUrls}
+      />
 
       <ContributedMemories memorialId={id} approved={approvedMemories} />
 

@@ -28,6 +28,9 @@ export const LIMITS = {
   publishesPerHour: 10,
   tributesPerHour: 30,
   reportsPerHour: 10,
+  entriesPerHour: 20,
+  /** Photos per journal entry. */
+  entryMediaCount: 9,
 } as const;
 
 export function isAllowedMediaType(

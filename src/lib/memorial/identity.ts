@@ -2,9 +2,11 @@ import { canonicalStringify } from "../canonical";
 import { base64UrlToBytes, utf8ToBytes } from "../codec";
 import { sha256Base64Url, signMessage, verifyMessage } from "../crypto";
 import type {
+  JournalEntry,
   MemorialManifest,
   ModerationRecord,
   TransitionRecord,
+  UnsignedJournalEntry,
   UnsignedMemorialManifest,
 } from "./schema";
 
@@ -86,6 +88,37 @@ export function verifyModerationRecord(
     moderationSigningPayload(record),
     record.sig,
     record.adminPubKey,
+  );
+}
+
+/** Journal entries are signed by the memorial's own management key. */
+function entrySigningPayload(entry: UnsignedJournalEntry): string {
+  const { ...unsigned } = entry as UnsignedJournalEntry & { sig?: string };
+  delete unsigned.sig;
+  return canonicalStringify(unsigned);
+}
+
+export function signJournalEntry(
+  entry: UnsignedJournalEntry,
+  secretKeyB64: string,
+): JournalEntry {
+  const sig = signMessage(entrySigningPayload(entry), secretKeyB64);
+  return { ...entry, sig };
+}
+
+/**
+ * An entry is trusted only when it is signed by the key that owns the
+ * memorial it claims to belong to — pass the manifest's ownerPubKey.
+ */
+export function verifyJournalEntry(
+  entry: JournalEntry,
+  memorialOwnerPubKeyB64: string,
+): boolean {
+  if (entry.ownerPubKey !== memorialOwnerPubKeyB64) return false;
+  return verifyMessage(
+    entrySigningPayload(entry),
+    entry.sig,
+    entry.ownerPubKey,
   );
 }
 
