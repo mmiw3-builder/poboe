@@ -64,6 +64,91 @@ const en: Dictionary = {
     zh: "中文",
     en: "English",
   },
+  memorial: {
+    story: "Life Story",
+    gallery: "Gallery",
+    inLivingMemory: "In loving memory",
+    notFound: "Memorial not found",
+    notFoundBody:
+      "The link may be incorrect, or the content is still propagating — please try again shortly.",
+    permanenceNote:
+      "This page is permanently stored on a decentralized network, independent of this website.",
+    share: "Share this memorial",
+    verify: "Verify on-chain",
+    report: "Report",
+    updatedAt: "Updated",
+  },
+  create: {
+    title: "Create a Memorial",
+    intro:
+      "Build a permanent memorial for someone worth remembering. Content is engraved forever on a decentralized storage network — please review carefully before publishing.",
+    permanenceWarning:
+      "Important: once published, content is stored permanently. No one — including us — can delete or alter past versions.",
+    steps: {
+      basics: "Basics",
+      story: "Life & Media",
+      publish: "Preview & Publish",
+    },
+    fields: {
+      name: "Name",
+      namePlaceholder: "e.g. Mary Chen",
+      altName: "Alternate name",
+      altNamePlaceholder: "e.g. 陈玛丽",
+      born: "Born",
+      bornPlaceholder: "e.g. March 1936",
+      died: "Passed away",
+      diedPlaceholder: "e.g. January 2024 (leave empty if living)",
+      epitaph: "Epitaph / one line",
+      epitaphPlaceholder: "e.g. Gentle in life, never truly gone",
+      bio: "Life story",
+      bioPlaceholder:
+        "Tell their story: where they came from, what they loved, what they leave behind… (paragraphs supported)",
+      portrait: "Portrait photo",
+      gallery: "Photos & video",
+      caption: "Caption (optional)",
+      tributesEnabled: "Allow visitors to lay flowers, light candles and leave messages",
+      lang: "Content language",
+    },
+    upload: {
+      addPortrait: "Choose portrait",
+      addMedia: "Add photo / video",
+      uploading: "Uploading permanently…",
+      uploaded: "Permanently stored",
+      remove: "Remove",
+      imageHint: "Photos are compressed before upload; max 3.5MB per file",
+      videoHint: "Short MP4/WebM clips up to 3.5MB",
+      failed: "Upload failed — please retry",
+      tooMany: "The gallery holds at most 12 items",
+    },
+    preview: {
+      title: "Preview",
+      show: "Show preview",
+      hide: "Hide preview",
+      empty: "Fill in the name first",
+    },
+    agree:
+      "I understand the content will be stored permanently and cannot be deleted; I confirm I have the rights or permission to publish it and it does not infringe on others.",
+    publish: "Publish permanently",
+    publishing: "Engraving into permanent storage…",
+    errors: {
+      nameRequired: "Please fill in the name",
+      agreeRequired: "Please confirm the consent checkbox first",
+      rejected: "The content did not pass moderation — please adjust and retry",
+      rateLimited: "Too many requests — please try again later",
+      failed: "Publishing failed — please try again later",
+    },
+    success: {
+      title: "The memorial has been created",
+      body: "The content is permanently engraved. Back up your management key now — it is the only way to edit this memorial and cannot be recovered if lost.",
+      keyTitle: "Management key backup",
+      keyBody:
+        "The key lives only in this browser. Download the backup file and keep it safe (e.g. in a password manager).",
+      downloadKey: "Download key backup",
+      copyLink: "Copy memorial link",
+      confirmSaved: "I have backed up the key",
+      visit: "Visit the memorial",
+    },
+  },
 };
 
 export default en;
