@@ -103,6 +103,13 @@ const en: Dictionary = {
     next: "Next",
     close: "Close",
   },
+  festival: {
+    qingming:
+      "Today is Qingming, the day of remembrance. Light a candle for someone you carry with you.",
+    dongzhi:
+      "Winter solstice — the longest night, the deepest remembering. Light a candle.",
+    cta: "Enter the gallery",
+  },
   space: {
     title: "My Space",
     subtitle: "Memorials guarded by the management keys in this browser.",

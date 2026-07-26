@@ -54,6 +54,22 @@ body {
   font-family: var(--font-sans);
 }
 
+/*
+ * Collective remembrance days (Qingming, winter solstice): the whole site
+ * dims to warm candlelight regardless of the visitor's color scheme.
+ */
+body.candlelight {
+  --background: #0f0c08;
+  --surface: #191510;
+  --foreground: #eae4d8;
+  --muted: #a89f8f;
+  --border: #2e2820;
+  --accent: #d3a95e;
+  --accent-strong: #e3c07f;
+  --accent-foreground: #1c1917;
+  --halo: rgba(211, 169, 94, 0.09);
+}
+
 /* Soft radial glow used behind hero sections — a quiet candle-light motif. */
 .halo {
   background: radial-gradient(

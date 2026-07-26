@@ -103,6 +103,11 @@ const zh = {
     next: "下一位",
     close: "关闭",
   },
+  festival: {
+    qingming: "今日清明。点一支烛，念一个人。",
+    dongzhi: "今日冬至，夜最长，思念最深。为记忆中的人点一支烛。",
+    cta: "走进缅怀长廊",
+  },
   space: {
     title: "我的空间",
     subtitle: "由本浏览器中的管理密钥所守护的纪念空间。",
