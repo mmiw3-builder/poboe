@@ -15,10 +15,17 @@ import {
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
+import { timingSafeEqual } from "node:crypto";
+
 function authorize(req: NextRequest): boolean {
   const token = process.env.ADMIN_TOKEN;
   if (!token) return false;
-  return req.headers.get("authorization") === `Bearer ${token}`;
+  const given = req.headers.get("authorization") ?? "";
+  const expected = Buffer.from(`Bearer ${token}`);
+  const actual = Buffer.from(given);
+  return (
+    actual.length === expected.length && timingSafeEqual(actual, expected)
+  );
 }
 
 const actionSchema = z.object({

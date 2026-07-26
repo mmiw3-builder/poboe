@@ -1,13 +1,21 @@
+import { timingSafeEqual } from "node:crypto";
 import type { NextRequest } from "next/server";
 import { errors, ok } from "@/lib/api/respond";
 import { getUploaderStatus } from "@/lib/irys/server";
 
 export const runtime = "nodejs";
 
+function authorized(req: NextRequest): boolean {
+  const token = process.env.ADMIN_TOKEN;
+  if (!token) return false;
+  const expected = Buffer.from(`Bearer ${token}`);
+  const actual = Buffer.from(req.headers.get("authorization") ?? "");
+  return actual.length === expected.length && timingSafeEqual(actual, expected);
+}
+
 /** Admin: server wallet address, network, balance and current price per MB. */
 export async function GET(req: NextRequest) {
-  const token = process.env.ADMIN_TOKEN;
-  if (!token || req.headers.get("authorization") !== `Bearer ${token}`) {
+  if (!authorized(req)) {
     return errors.unauthorized();
   }
   try {
