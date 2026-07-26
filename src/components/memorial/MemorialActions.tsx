@@ -3,16 +3,53 @@
 import { useState } from "react";
 import { useI18n } from "@/i18n/client";
 
-/** Share / verify-on-chain / report bar under a memorial. */
+export interface ShareCardInfo {
+  name: string;
+  altName?: string;
+  dates?: string;
+  epitaph?: string;
+  portraitUrl?: string;
+}
+
+/** Share / memorial-card / verify-on-chain / report bar under a memorial. */
 export default function MemorialActions({
   memorialId,
   verifyUrl,
+  card,
 }: {
   memorialId: string;
   verifyUrl: string;
+  card: ShareCardInfo;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [copied, setCopied] = useState(false);
+  const [rendering, setRendering] = useState(false);
+
+  async function downloadCard() {
+    setRendering(true);
+    try {
+      const { renderShareCard } = await import("@/lib/client/shareCard");
+      const blob = await renderShareCard({
+        id: memorialId,
+        name: card.name,
+        altName: card.altName,
+        dates: card.dates,
+        epitaph: card.epitaph,
+        portraitUrl: card.portraitUrl,
+        url: window.location.href,
+        locale,
+      });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `evermark-${memorialId}.png`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch (err) {
+      console.error("share card failed:", err);
+    } finally {
+      setRendering(false);
+    }
+  }
   const [reportOpen, setReportOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [reportState, setReportState] = useState<
@@ -55,6 +92,14 @@ export default function MemorialActions({
           }}
         >
           {copied ? t.common.copied : t.memorial.share}
+        </button>
+        <button
+          type="button"
+          className="hover:text-accent"
+          disabled={rendering}
+          onClick={() => void downloadCard()}
+        >
+          {rendering ? t.memorial.shareCardBusy : t.memorial.shareCard}
         </button>
         <a
           href={verifyUrl}

@@ -104,7 +104,21 @@ export default async function MemorialPage(props: PageProps<"/m/[id]">) {
           }))}
       />
 
-      <MemorialActions memorialId={id} verifyUrl={gatewayUrlFor(txId)} />
+      <MemorialActions
+        memorialId={id}
+        verifyUrl={gatewayUrlFor(txId)}
+        card={{
+          name: manifest.subject.name,
+          altName: manifest.subject.altName,
+          dates: [manifest.subject.born, manifest.subject.died]
+            .filter(Boolean)
+            .join(" — "),
+          epitaph: manifest.subject.epitaph,
+          portraitUrl: manifest.subject.portrait
+            ? gatewayUrlFor(manifest.subject.portrait.txId)
+            : undefined,
+        }}
+      />
     </main>
   );
 }

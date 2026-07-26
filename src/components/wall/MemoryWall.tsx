@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useI18n } from "@/i18n/client";
+import { tileGradientCss as tileGradient } from "@/lib/personalHue";
 
 /**
  * The Wall of Memory — the homepage centerpiece. Every tile is a person.
@@ -23,18 +24,6 @@ export interface WallPerson {
 }
 
 type Density = "overview" | "comfortable" | "detail";
-
-/** Deterministic personal hue: the same person always gets the same color. */
-function hueOf(id: string): number {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 360;
-  return h;
-}
-
-function tileGradient(id: string): string {
-  const h = hueOf(id);
-  return `linear-gradient(140deg, hsl(${h} 30% 46%), hsl(${(h + 24) % 360} 34% 24%))`;
-}
 
 const GRID_CLASS: Record<Density, string> = {
   overview:

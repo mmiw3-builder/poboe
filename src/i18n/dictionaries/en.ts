@@ -76,6 +76,8 @@ const en: Dictionary = {
     permanenceNote:
       "This page is permanently stored on a decentralized network, independent of this website.",
     share: "Share this memorial",
+    shareCard: "Create memorial card",
+    shareCardBusy: "Rendering…",
     verify: "Verify on-chain",
     report: "Report",
     updatedAt: "Updated",

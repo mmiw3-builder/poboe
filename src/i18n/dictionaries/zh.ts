@@ -76,6 +76,8 @@ const zh = {
     notFoundBody: "链接可能有误，或内容尚在网络确认中，请稍后再试。",
     permanenceNote: "本页内容永久存储于去中心化网络，独立于本网站存续。",
     share: "分享此空间",
+    shareCard: "生成纪念卡",
+    shareCardBusy: "生成中…",
     verify: "链上验证",
     report: "举报",
     updatedAt: "更新于",
