@@ -72,7 +72,10 @@ export default function MemorialView({
     .filter(Boolean);
 
   return (
-    <article className="mx-auto w-full max-w-3xl px-4 sm:px-6">
+    <article
+      className="mx-auto w-full max-w-3xl px-4 sm:px-6"
+      data-mood={living ? "living" : undefined}
+    >
       {/* Stone header */}
       <header className="halo flex flex-col items-center pt-14 pb-10 text-center">
         {data.portrait && (
