@@ -7,6 +7,7 @@ import { clientKeyFromHeaders, rateLimit } from "@/lib/moderation/rateLimit";
 import { TAGS } from "@/lib/memorial/schema";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 /**
  * Server-paid media upload. Accepts one image/video per request

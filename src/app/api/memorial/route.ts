@@ -10,6 +10,7 @@ import { clientKeyFromHeaders, rateLimit } from "@/lib/moderation/rateLimit";
 import { moderateText } from "@/lib/moderation/text";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 /** Fetch the latest valid manifest (used by the edit flow). */
 export async function GET(req: NextRequest) {

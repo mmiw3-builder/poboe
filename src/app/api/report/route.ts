@@ -8,6 +8,7 @@ import { LIMITS } from "@/lib/moderation/limits";
 import { clientKeyFromHeaders, rateLimit } from "@/lib/moderation/rateLimit";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 const requestSchema = z.object({
   targetType: z.enum(["memorial", "tribute"]),

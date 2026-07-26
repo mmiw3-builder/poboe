@@ -10,6 +10,7 @@ import { clientKeyFromHeaders, rateLimit } from "@/lib/moderation/rateLimit";
 import { moderateText } from "@/lib/moderation/text";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 const requestSchema = z.object({
   memorialId: z.string().min(10).max(40),

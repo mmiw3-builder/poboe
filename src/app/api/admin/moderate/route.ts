@@ -13,6 +13,7 @@ import {
 } from "@/lib/memorial/schema";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 function authorize(req: NextRequest): boolean {
   const token = process.env.ADMIN_TOKEN;
