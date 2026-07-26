@@ -65,6 +65,8 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
   const [altName, setAltName] = useState(initial?.subject.altName ?? "");
   const [born, setBorn] = useState(initial?.subject.born ?? "");
   const [died, setDied] = useState(initial?.subject.died ?? "");
+  const [bornDate, setBornDate] = useState(initial?.subject.bornDate ?? "");
+  const [diedDate, setDiedDate] = useState(initial?.subject.diedDate ?? "");
   const [epitaph, setEpitaph] = useState(initial?.subject.epitaph ?? "");
 
   // Step 2 — story & media
@@ -127,6 +129,8 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
       altName: altName.trim() || undefined,
       born: born.trim() || undefined,
       died: died.trim() || undefined,
+      bornDate: bornDate || undefined,
+      diedDate: diedDate || undefined,
       epitaph: epitaph.trim() || undefined,
       bio: bio.trim() || undefined,
       portrait:
@@ -137,7 +141,7 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
       media: doneGallery.map((g) => toMediaRef(g.media, g.caption)),
       events: cleanEvents,
     };
-  }, [name, altName, born, died, epitaph, bio, portrait, voice, gallery, cleanEvents]);
+  }, [name, altName, born, died, bornDate, diedDate, epitaph, bio, portrait, voice, gallery, cleanEvents]);
 
   const previewUrls = useMemo(() => {
     const map: Record<string, string> = {};
@@ -354,6 +358,24 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
                 onChange={(e) => setDied(e.target.value)}
                 placeholder={t.create.fields.diedPlaceholder}
                 maxLength={40}
+              />
+            </Field>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field label={t.create.fields.bornDate}>
+              <input
+                type="date"
+                className="input"
+                value={bornDate}
+                onChange={(e) => setBornDate(e.target.value)}
+              />
+            </Field>
+            <Field label={t.create.fields.diedDate}>
+              <input
+                type="date"
+                className="input"
+                value={diedDate}
+                onChange={(e) => setDiedDate(e.target.value)}
               />
             </Field>
           </div>

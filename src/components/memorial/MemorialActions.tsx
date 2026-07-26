@@ -16,10 +16,12 @@ export default function MemorialActions({
   memorialId,
   verifyUrl,
   card,
+  hasAnniversaries,
 }: {
   memorialId: string;
   verifyUrl: string;
   card: ShareCardInfo;
+  hasAnniversaries?: boolean;
 }) {
   const { t, locale } = useI18n();
   const [copied, setCopied] = useState(false);
@@ -101,6 +103,11 @@ export default function MemorialActions({
         >
           {rendering ? t.memorial.shareCardBusy : t.memorial.shareCard}
         </button>
+        {hasAnniversaries && (
+          <a href={`/api/ics/${memorialId}`} className="hover:text-accent">
+            {t.memorial.calendar}
+          </a>
+        )}
         <a
           href={verifyUrl}
           target="_blank"

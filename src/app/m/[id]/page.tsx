@@ -107,6 +107,10 @@ export default async function MemorialPage(props: PageProps<"/m/[id]">) {
       <MemorialActions
         memorialId={id}
         verifyUrl={gatewayUrlFor(txId)}
+        hasAnniversaries={Boolean(
+          (manifest.subject.bornDate ?? "").length === 10 ||
+            (manifest.subject.diedDate ?? "").length === 10,
+        )}
         card={{
           name: manifest.subject.name,
           altName: manifest.subject.altName,
