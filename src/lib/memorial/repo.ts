@@ -20,7 +20,9 @@ import {
  * it is trusted. Records that fail verification are silently dropped.
  */
 
-function baseTags(type: "memorial" | "tribute" | "moderation" | "report") {
+function baseTags(
+  type: "memorial" | "tribute" | "moderation" | "report" | "contribution",
+) {
   return [
     { name: TAGS.appName, values: [getAppTag()] },
     { name: TAGS.type, values: [type] },
