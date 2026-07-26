@@ -94,6 +94,9 @@ export default function SpaceList() {
         <Link href="/create" className="btn-primary">
           {t.space.createNew}
         </Link>
+        <Link href="/space/watch" className="btn-outline">
+          {t.watch.spaceLink}
+        </Link>
         <button
           type="button"
           className="btn-outline"

@@ -11,6 +11,7 @@ export const SCHEMA_TRIBUTE = "poboe/tribute@1";
 export const SCHEMA_MODERATION = "poboe/moderation@1";
 export const SCHEMA_REPORT = "poboe/report@1";
 export const SCHEMA_CONTRIBUTION = "poboe/contribution@1";
+export const SCHEMA_TRANSITION = "poboe/transition@1";
 
 /** Irys tag names/values used to index records. */
 export const TAGS = {
@@ -27,7 +28,8 @@ export type RecordType =
   | "tribute"
   | "moderation"
   | "report"
-  | "contribution";
+  | "contribution"
+  | "transition";
 
 const base64Url = /^[A-Za-z0-9_-]+$/;
 
@@ -147,6 +149,25 @@ export const contributionSchema = z.object({
 });
 
 export type Contribution = z.infer<typeof contributionSchema>;
+
+/**
+ * Watch-mechanism outcome: the platform attests that a living space has
+ * become a memorial (inactivity elapsed, kin confirmed, cooling period
+ * passed without an owner veto). The manifest itself cannot be re-signed
+ * by the server — this admin-signed overlay flips the displayed status,
+ * and like moderation records it is public and auditable.
+ */
+export const transitionRecordSchema = z.object({
+  schemaId: z.literal(SCHEMA_TRANSITION),
+  memorialId: z.string().min(10).max(40).regex(base64Url),
+  toStatus: z.literal("deceased"),
+  reason: z.enum(["watch_confirmed"]),
+  createdAt: z.number().int().positive(),
+  adminPubKey: z.string().min(40).max(50).regex(base64Url),
+  sig: z.string().min(80).max(100).regex(base64Url),
+});
+
+export type TransitionRecord = z.infer<typeof transitionRecordSchema>;
 
 export const reportSchema = z.object({
   schemaId: z.literal(SCHEMA_REPORT),

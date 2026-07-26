@@ -4,6 +4,7 @@ import { sha256Base64Url, signMessage, verifyMessage } from "../crypto";
 import type {
   MemorialManifest,
   ModerationRecord,
+  TransitionRecord,
   UnsignedMemorialManifest,
 } from "./schema";
 
@@ -83,6 +84,37 @@ export function verifyModerationRecord(
   if (record.adminPubKey !== trustedAdminPubKeyB64) return false;
   return verifyMessage(
     moderationSigningPayload(record),
+    record.sig,
+    record.adminPubKey,
+  );
+}
+
+/** Watch-transition attestations use the same admin key as moderation. */
+function transitionSigningPayload(
+  record: Omit<TransitionRecord, "sig">,
+): string {
+  const { ...unsigned } = record as Omit<TransitionRecord, "sig"> & {
+    sig?: string;
+  };
+  delete unsigned.sig;
+  return canonicalStringify(unsigned);
+}
+
+export function signTransitionRecord(
+  record: Omit<TransitionRecord, "sig">,
+  secretKeyB64: string,
+): TransitionRecord {
+  const sig = signMessage(transitionSigningPayload(record), secretKeyB64);
+  return { ...record, sig };
+}
+
+export function verifyTransitionRecord(
+  record: TransitionRecord,
+  trustedAdminPubKeyB64: string,
+): boolean {
+  if (record.adminPubKey !== trustedAdminPubKeyB64) return false;
+  return verifyMessage(
+    transitionSigningPayload(record),
     record.sig,
     record.adminPubKey,
   );

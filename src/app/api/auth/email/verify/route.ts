@@ -11,6 +11,7 @@ import {
   verifyEmailCode,
 } from "@/lib/auth/service";
 import { clientKeyFromHeaders, rateLimit } from "@/lib/moderation/rateLimit";
+import { resetWatchesOnActivity } from "@/lib/watch/service";
 
 export const runtime = "nodejs";
 
@@ -40,6 +41,8 @@ export async function POST(req: NextRequest) {
   if (!valid) return errors.badRequest("Invalid or expired code.");
 
   const user = await findOrCreateUserByEmail(parsed.data.email);
+  // Signing in is proof of life: cancel any watch escalation in progress.
+  await resetWatchesOnActivity(user.id);
   const token = await createSessionToken(user.id);
   const res = NextResponse.json({
     data: { user: { id: user.id, email: user.email, wallet: user.wallet } },

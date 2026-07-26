@@ -9,6 +9,7 @@ import { gatewayUrlFor } from "@/lib/irys/config";
 import { lifeDates } from "@/lib/memorial/display";
 import {
   getMemorial,
+  getTransition,
   listContributions,
   listTributes,
 } from "@/lib/memorial/repo";
@@ -85,12 +86,20 @@ export default async function MemorialPage(props: PageProps<"/m/[id]">) {
 
   const { manifest, txId } = result;
   const approvedSet = new Set(manifest.approvedContributions ?? []);
-  const [tributes, contributions] = await Promise.all([
+  const [tributes, contributions, transition] = await Promise.all([
     listTributes(id, { limit: 100 }),
     approvedSet.size > 0 || manifest.tributesEnabled
       ? listContributions(id)
       : Promise.resolve([]),
+    // The watch mechanism can turn a living page into a memorial via an
+    // admin-signed on-chain record; only living manifests need the lookup.
+    manifest.subject.status === "living"
+      ? getTransition(id)
+      : Promise.resolve(null),
   ]);
+  const effectiveSubject = transition
+    ? { ...manifest.subject, status: "deceased" as const }
+    : manifest.subject;
   const approvedMemories = contributions
     .filter((c) => approvedSet.has(c.txId))
     .map((c) => ({
@@ -104,12 +113,18 @@ export default async function MemorialPage(props: PageProps<"/m/[id]">) {
     <main className="flex-1 pb-10">
       <MemorialView
         data={{
-          ...manifest.subject,
+          ...effectiveSubject,
           media: manifest.media,
           events: manifest.events,
         }}
         mediaUrls={mediaUrlMap(manifest)}
       />
+
+      {transition && (
+        <p className="mx-auto max-w-xl px-4 text-center text-xs leading-6 text-muted">
+          {t.watch.transitionNotice}
+        </p>
+      )}
 
       <ContributedMemories memorialId={id} approved={approvedMemories} />
 
@@ -136,7 +151,7 @@ export default async function MemorialPage(props: PageProps<"/m/[id]">) {
         card={{
           name: manifest.subject.name,
           altName: manifest.subject.altName,
-          dates: lifeDates(manifest.subject, t.memorial.present),
+          dates: lifeDates(effectiveSubject, t.memorial.present),
           epitaph: manifest.subject.epitaph,
           portraitUrl: manifest.subject.portrait
             ? gatewayUrlFor(manifest.subject.portrait.txId)

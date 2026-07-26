@@ -12,6 +12,7 @@ import {
   findOrCreateUserByWallet,
 } from "@/lib/auth/service";
 import { clientKeyFromHeaders, rateLimit } from "@/lib/moderation/rateLimit";
+import { resetWatchesOnActivity } from "@/lib/watch/service";
 
 export const runtime = "nodejs";
 
@@ -50,6 +51,8 @@ export async function POST(req: NextRequest) {
   }
 
   const user = await findOrCreateUserByWallet(recovered);
+  // Signing in is proof of life: cancel any watch escalation in progress.
+  await resetWatchesOnActivity(user.id);
   const token = await createSessionToken(user.id);
   const res = NextResponse.json({
     data: { user: { id: user.id, email: user.email, wallet: user.wallet } },

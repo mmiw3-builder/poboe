@@ -1,16 +1,22 @@
 import { getAppTag } from "../irys/config";
 import { fetchTxJson, queryTransactions, tagValue } from "../irys/query";
 import { publicKeyOf } from "../crypto";
-import { verifyManifest, verifyModerationRecord } from "./identity";
+import {
+  verifyManifest,
+  verifyModerationRecord,
+  verifyTransitionRecord,
+} from "./identity";
 import {
   TAGS,
   contributionSchema,
   memorialManifestSchema,
   moderationRecordSchema,
+  transitionRecordSchema,
   tributeSchema,
   type Contribution,
   type MemorialManifest,
   type ModerationRecord,
+  type TransitionRecord,
   type Tribute,
 } from "./schema";
 
@@ -21,7 +27,13 @@ import {
  */
 
 function baseTags(
-  type: "memorial" | "tribute" | "moderation" | "report" | "contribution",
+  type:
+    | "memorial"
+    | "tribute"
+    | "moderation"
+    | "report"
+    | "contribution"
+    | "transition",
 ) {
   return [
     { name: TAGS.appName, values: [getAppTag()] },
@@ -78,6 +90,39 @@ export async function getModerationState(): Promise<ModerationState> {
     else set.delete(parsed.data.targetId);
   }
   return state;
+}
+
+/**
+ * Valid admin-signed transition record for a memorial, if one exists.
+ * Called only for living-status manifests — a deceased manifest never
+ * needs the overlay.
+ */
+export async function getTransition(
+  memorialId: string,
+): Promise<TransitionRecord | null> {
+  const adminPubKey = getAdminPublicKey();
+  if (!adminPubKey) return null;
+
+  const page = await queryTransactions({
+    tags: [
+      ...baseTags("transition"),
+      { name: TAGS.memorialId, values: [memorialId] },
+    ],
+    first: 10,
+    order: "DESC",
+    revalidate: 60,
+  });
+  const records = await Promise.all(
+    page.nodes.map((n) => fetchTxJson<TransitionRecord>(n.id)),
+  );
+  for (const raw of records) {
+    const parsed = transitionRecordSchema.safeParse(raw);
+    if (!parsed.success) continue;
+    if (parsed.data.memorialId !== memorialId) continue;
+    if (!verifyTransitionRecord(parsed.data, adminPubKey)) continue;
+    return parsed.data;
+  }
+  return null;
 }
 
 async function fetchManifest(txId: string): Promise<MemorialManifest | null> {

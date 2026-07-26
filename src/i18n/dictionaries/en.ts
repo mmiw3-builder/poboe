@@ -106,6 +106,48 @@ const en: Dictionary = {
     next: "Next",
     close: "Close",
   },
+  watch: {
+    title: "The Watch",
+    subtitle: "A quiet arrangement for a life-in-progress space",
+    intro:
+      "If you stop signing in for a long time we first email you; without a response we ask a contact you trust to help confirm. Even then a 30-day cooling period follows — a single sign-in from you cancels everything. Only after all of that does the space become a memorial, permanently remembered.",
+    enable: "Enable the watch",
+    inactivityLabel: "Consider me unreachable after",
+    daysUnit: "days",
+    contactLabel: "Watch contact email",
+    contactPlaceholder: "trusted@example.com",
+    save: "Save",
+    saving: "Saving…",
+    saved: "Saved",
+    failed: "Could not save — please try again",
+    invalidEmail: "Please enter a valid contact email",
+    states: {
+      none: "Not set",
+      active: "Watching",
+      overdue: "Waiting for you to check in",
+      pending_confirm: "Contact asked to confirm",
+      cooling: "Cooling period",
+      transitioned: "Now a memorial",
+      disabled: "Off",
+    },
+    coolingUntil: "Cooling ends",
+    empty:
+      "No spaces published from this account yet. Publish one and set up its watch here.",
+    spaceLink: "The Watch",
+    confirm: {
+      title: "Watch confirmation",
+      body: "An Evermark user named you as their watch contact. If they have truly passed away, please confirm below. A 30-day cooling period follows — a single sign-in from them cancels everything; after it ends, their space becomes a memorial.",
+      warning:
+        "Please confirm only if this is true — this trust must not be taken lightly.",
+      button: "I confirm they have passed away",
+      confirming: "Submitting…",
+      done: "Confirmation received. The cooling period ends in 30 days, after which the space becomes a memorial. Thank you for keeping watch.",
+      invalid:
+        "This confirmation link is invalid or has expired. If in doubt, contact the family member who set up the watch.",
+    },
+    transitionNotice:
+      "Confirmed through the watch mechanism, this space has passed from a life in progress into a memorial.",
+  },
   billing: {
     balance: "Balance",
     freeLeft: "Free allowance left",

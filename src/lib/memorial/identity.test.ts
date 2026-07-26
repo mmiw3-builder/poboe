@@ -6,13 +6,17 @@ import {
   deriveMemorialId,
   signManifest,
   signModerationRecord,
+  signTransitionRecord,
   verifyManifest,
   verifyModerationRecord,
+  verifyTransitionRecord,
 } from "./identity";
 import {
   SCHEMA_MEMORIAL,
   SCHEMA_MODERATION,
+  SCHEMA_TRANSITION,
   memorialManifestSchema,
+  transitionRecordSchema,
   type MemorialManifest,
   type UnsignedMemorialManifest,
 } from "./schema";
@@ -172,6 +176,31 @@ describe("schema v2 signature compatibility", () => {
     );
     expect(parsed.subject.status).toBe("living");
     expect(verifyManifest(parsed)).toBe(true);
+  });
+});
+
+describe("transition records", () => {
+  it("verifies only against the trusted admin key and survives the wire", () => {
+    const admin = generateKeyPair();
+    const rogue = generateKeyPair();
+    const record = signTransitionRecord(
+      {
+        schemaId: SCHEMA_TRANSITION,
+        memorialId: "qLzgpb6x66RTw4-b2vekxw",
+        toStatus: "deceased",
+        reason: "watch_confirmed",
+        createdAt: 1700000000000,
+        adminPubKey: admin.publicKey,
+      },
+      admin.secretKey,
+    );
+    const parsed = transitionRecordSchema.parse(
+      JSON.parse(JSON.stringify(record)),
+    );
+    expect(verifyTransitionRecord(parsed, admin.publicKey)).toBe(true);
+    expect(verifyTransitionRecord(parsed, rogue.publicKey)).toBe(false);
+    const tampered = { ...parsed, memorialId: "AAAAAAAAAAAAAAAAAAAAAA" };
+    expect(verifyTransitionRecord(tampered, admin.publicKey)).toBe(false);
   });
 });
 
