@@ -11,7 +11,7 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const requestSchema = z.object({
-  targetType: z.enum(["memorial", "tribute"]),
+  targetType: z.enum(["memorial", "tribute", "contribution"]),
   targetId: z.string().min(1).max(100),
   reason: z.string().min(1).max(1000),
 });

@@ -30,7 +30,7 @@ function authorize(req: NextRequest): boolean {
 
 const actionSchema = z.object({
   action: z.enum(["hide", "unhide"]),
-  targetType: z.enum(["memorial", "tribute"]),
+  targetType: z.enum(["memorial", "tribute", "contribution"]),
   targetId: z.string().min(1).max(100),
   reason: z.string().max(500).optional(),
 });

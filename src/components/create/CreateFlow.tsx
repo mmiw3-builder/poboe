@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import BioInterview from "@/components/create/BioInterview";
+import ContributionReview from "@/components/create/ContributionReview";
 import MemorialView from "@/components/memorial/MemorialView";
 import { useI18n } from "@/i18n/client";
 import { uploadMedia, type UploadedMedia } from "@/lib/client/media";
@@ -85,6 +86,9 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
     initial && edit ? toPending(initial.media, edit.mediaUrls) : [],
   );
   const [events, setEvents] = useState<LifeEvent[]>(initial?.events ?? []);
+  const [approvedContributions, setApprovedContributions] = useState<string[]>(
+    initial?.approvedContributions ?? [],
+  );
   const [tributesEnabled, setTributesEnabled] = useState(
     initial?.tributesEnabled ?? true,
   );
@@ -237,8 +241,7 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
         media: previewData.media,
         tributesEnabled,
         lang: initial?.lang ?? locale,
-        // Keep previously-approved contributions across ordinary edits.
-        approvedContributions: edit?.manifest.approvedContributions,
+        approvedContributions,
       };
       if (edit) {
         await publishUpdate(edit.storedKey, edit.manifest, draft);
@@ -688,6 +691,16 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
               {t.create.upload.imageHint} · {t.create.upload.videoHint}
             </p>
           </Field>
+
+          {edit && (
+            <Field label={t.contributions.review.title}>
+              <ContributionReview
+                memorialId={edit.storedKey.memorialId}
+                approved={approvedContributions}
+                onChange={setApprovedContributions}
+              />
+            </Field>
+          )}
 
           <label className="flex items-center gap-3 text-sm">
             <input

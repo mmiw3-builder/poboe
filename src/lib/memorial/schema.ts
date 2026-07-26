@@ -115,7 +115,7 @@ export type Tribute = z.infer<typeof tributeSchema>;
 export const moderationRecordSchema = z.object({
   schemaId: z.literal(SCHEMA_MODERATION),
   action: z.enum(["hide", "unhide"]),
-  targetType: z.enum(["memorial", "tribute"]),
+  targetType: z.enum(["memorial", "tribute", "contribution"]),
   /** memorialId for memorials, Irys txId for tributes */
   targetId: z.string().min(1).max(100),
   reason: z.string().max(500).optional(),
@@ -141,7 +141,7 @@ export type Contribution = z.infer<typeof contributionSchema>;
 
 export const reportSchema = z.object({
   schemaId: z.literal(SCHEMA_REPORT),
-  targetType: z.enum(["memorial", "tribute"]),
+  targetType: z.enum(["memorial", "tribute", "contribution"]),
   targetId: z.string().min(1).max(100),
   reason: z.string().min(1).max(1000),
   createdAt: z.number().int().positive(),

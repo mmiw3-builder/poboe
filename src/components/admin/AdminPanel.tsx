@@ -11,7 +11,7 @@ import { useCallback, useEffect, useState } from "react";
 interface ReportRow {
   txId: string;
   report: {
-    targetType: "memorial" | "tribute";
+    targetType: "memorial" | "tribute" | "contribution";
     targetId: string;
     reason: string;
     createdAt: number;
@@ -32,9 +32,9 @@ export default function AdminPanel() {
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [manualType, setManualType] = useState<"memorial" | "tribute">(
-    "memorial",
-  );
+  const [manualType, setManualType] = useState<
+    "memorial" | "tribute" | "contribution"
+  >("memorial");
   const [manualId, setManualId] = useState("");
 
   useEffect(() => {
@@ -82,7 +82,7 @@ export default function AdminPanel() {
 
   async function act(
     action: "hide" | "unhide",
-    targetType: "memorial" | "tribute",
+    targetType: "memorial" | "tribute" | "contribution",
     targetId: string,
   ) {
     setBusy(true);
@@ -157,11 +157,14 @@ export default function AdminPanel() {
             className="input !w-auto"
             value={manualType}
             onChange={(e) =>
-              setManualType(e.target.value as "memorial" | "tribute")
+              setManualType(
+                e.target.value as "memorial" | "tribute" | "contribution",
+              )
             }
           >
             <option value="memorial">memorial (id)</option>
             <option value="tribute">tribute (txId)</option>
+            <option value="contribution">contribution (txId)</option>
           </select>
           <input
             className="input !w-64"

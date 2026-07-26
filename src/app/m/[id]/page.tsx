@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import ContributedMemories from "@/components/memorial/ContributedMemories";
 import MemorialActions from "@/components/memorial/MemorialActions";
 import MemorialView from "@/components/memorial/MemorialView";
 import Tributes from "@/components/memorial/Tributes";
 import { getDictionary, getLocale } from "@/i18n/server";
 import { gatewayUrlFor } from "@/lib/irys/config";
-import { getMemorial, listTributes } from "@/lib/memorial/repo";
+import {
+  getMemorial,
+  listContributions,
+  listTributes,
+} from "@/lib/memorial/repo";
 import type { MemorialManifest } from "@/lib/memorial/schema";
 
 export const runtime = "nodejs";
@@ -78,7 +83,21 @@ export default async function MemorialPage(props: PageProps<"/m/[id]">) {
   }
 
   const { manifest, txId } = result;
-  const tributes = await listTributes(id, { limit: 100 });
+  const approvedSet = new Set(manifest.approvedContributions ?? []);
+  const [tributes, contributions] = await Promise.all([
+    listTributes(id, { limit: 100 }),
+    approvedSet.size > 0 || manifest.tributesEnabled
+      ? listContributions(id)
+      : Promise.resolve([]),
+  ]);
+  const approvedMemories = contributions
+    .filter((c) => approvedSet.has(c.txId))
+    .map((c) => ({
+      name: c.contribution.name,
+      relation: c.contribution.relation,
+      story: c.contribution.story,
+      createdAt: c.contribution.createdAt,
+    }));
 
   return (
     <main className="flex-1 pb-10">
@@ -90,6 +109,8 @@ export default async function MemorialPage(props: PageProps<"/m/[id]">) {
         }}
         mediaUrls={mediaUrlMap(manifest)}
       />
+
+      <ContributedMemories memorialId={id} approved={approvedMemories} />
 
       <Tributes
         memorialId={id}

@@ -4,9 +4,11 @@ import { publicKeyOf } from "../crypto";
 import { verifyManifest, verifyModerationRecord } from "./identity";
 import {
   TAGS,
+  contributionSchema,
   memorialManifestSchema,
   moderationRecordSchema,
   tributeSchema,
+  type Contribution,
   type MemorialManifest,
   type ModerationRecord,
   type Tribute,
@@ -38,6 +40,7 @@ export function getAdminPublicKey(): string | null {
 export interface ModerationState {
   hiddenMemorials: Set<string>;
   hiddenTributes: Set<string>;
+  hiddenContributions: Set<string>;
 }
 
 /** Replay signed hide/unhide records (oldest first) into the current state. */
@@ -45,6 +48,7 @@ export async function getModerationState(): Promise<ModerationState> {
   const state: ModerationState = {
     hiddenMemorials: new Set(),
     hiddenTributes: new Set(),
+    hiddenContributions: new Set(),
   };
   const adminPubKey = getAdminPublicKey();
   if (!adminPubKey) return state;
@@ -65,7 +69,9 @@ export async function getModerationState(): Promise<ModerationState> {
     const set =
       parsed.data.targetType === "memorial"
         ? state.hiddenMemorials
-        : state.hiddenTributes;
+        : parsed.data.targetType === "tribute"
+          ? state.hiddenTributes
+          : state.hiddenContributions;
     if (parsed.data.action === "hide") set.add(parsed.data.targetId);
     else set.delete(parsed.data.targetId);
   }
@@ -166,6 +172,39 @@ export async function listMemorials(options: {
     endCursor: page.endCursor,
     hasNextPage: page.hasNextPage,
   };
+}
+
+export interface ContributionItem {
+  contribution: Contribution;
+  txId: string;
+}
+
+/** All (non-hidden) visitor contributions for a memorial, newest first. */
+export async function listContributions(
+  memorialId: string,
+): Promise<ContributionItem[]> {
+  const [page, moderation] = await Promise.all([
+    queryTransactions({
+      tags: [
+        ...baseTags("contribution"),
+        { name: TAGS.memorialId, values: [memorialId] },
+      ],
+      first: 100,
+      order: "DESC",
+      revalidate: 15,
+    }),
+    getModerationState(),
+  ]);
+  const parsed = await Promise.all(
+    page.nodes.map(async (node) => {
+      if (moderation.hiddenContributions.has(node.id)) return null;
+      const raw = await fetchTxJson(node.id);
+      const result = contributionSchema.safeParse(raw);
+      if (!result.success || result.data.memorialId !== memorialId) return null;
+      return { contribution: result.data, txId: node.id };
+    }),
+  );
+  return parsed.filter((x): x is ContributionItem => x !== null);
 }
 
 export interface TributeItem {

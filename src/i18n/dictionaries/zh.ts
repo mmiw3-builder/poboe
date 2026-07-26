@@ -135,6 +135,28 @@ const zh = {
     loadMore: "加载更多",
     beFirst: "建立纪念空间",
   },
+  contributions: {
+    title: "亲友记忆",
+    submitOpen: "补充一段记忆",
+    intro:
+      "如果您认识 TA，欢迎写下您记忆中的片段。经纪念空间主人确认后，将永久展示在这里。",
+    namePlaceholder: "您的称呼（选填）",
+    relationPlaceholder: "与 TA 的关系（选填，如：老同事）",
+    storyPlaceholder: "写下您记忆中的 TA…",
+    submit: "提交",
+    sending: "提交中…",
+    thanks: "已提交。待纪念空间主人确认后展示。",
+    failed: "提交失败，请稍后再试",
+    rejected: "内容未通过审核",
+    anonymous: "匿名亲友",
+    review: {
+      title: "亲友投稿的记忆",
+      hint: "勾选要展示的投稿——发布更新后，它们将出现在纪念页的「亲友记忆」中。",
+      empty: "暂无亲友投稿",
+      loading: "加载投稿中…",
+      approvedMark: "展示",
+    },
+  },
   tributes: {
     title: "缅怀",
     flower: "献花",

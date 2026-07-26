@@ -138,6 +138,28 @@ const en: Dictionary = {
     loadMore: "Load more",
     beFirst: "Create a Memorial",
   },
+  contributions: {
+    title: "Memories from Family & Friends",
+    submitOpen: "Add a memory",
+    intro:
+      "If you knew them, share a fragment of your memory. Once confirmed by the memorial's keeper, it will be displayed here permanently.",
+    namePlaceholder: "Your name (optional)",
+    relationPlaceholder: "Your relationship (optional, e.g. colleague)",
+    storyPlaceholder: "Write what you remember about them…",
+    submit: "Submit",
+    sending: "Submitting…",
+    thanks: "Submitted. It will appear once the memorial's keeper confirms it.",
+    failed: "Submission failed — please try again later",
+    rejected: "The content did not pass moderation",
+    anonymous: "A friend",
+    review: {
+      title: "Contributed memories",
+      hint: "Tick the contributions to display — after publishing the update they appear in the memorial's memories section.",
+      empty: "No contributions yet",
+      loading: "Loading contributions…",
+      approvedMark: "Show",
+    },
+  },
   tributes: {
     title: "Tributes",
     flower: "Flowers",
