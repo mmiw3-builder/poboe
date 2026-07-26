@@ -1,26 +1,64 @@
 @import "tailwindcss";
 
+/*
+ * Evermark design tokens — "paper & ink with gilded accents".
+ * Light: warm paper, deep ink, bronze-gold accent.
+ * Dark: candle-lit charcoal, warm off-white, brighter gold.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --background: #faf9f7;
+  --surface: #ffffff;
+  --foreground: #1c1917;
+  --muted: #78716c;
+  --border: #e7e3dc;
+  --accent: #94743a;
+  --accent-strong: #7a5e2c;
+  --accent-foreground: #ffffff;
+  --halo: rgba(148, 116, 58, 0.08);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0e0d0b;
+    --surface: #17151199;
+    --foreground: #e8e6e1;
+    --muted: #a39e96;
+    --border: #2b2823;
+    --accent: #c9a55c;
+    --accent-strong: #dcbd7c;
+    --accent-foreground: #1c1917;
+    --halo: rgba(201, 165, 92, 0.07);
   }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-halo: var(--halo);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-serif: var(--font-serif-latin), var(--font-serif-sc), Georgia,
+    "Songti SC", "SimSun", serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+/* Soft radial glow used behind hero sections — a quiet candle-light motif. */
+.halo {
+  background: radial-gradient(
+    ellipse 60% 50% at 50% 35%,
+    var(--halo),
+    transparent
+  );
 }
