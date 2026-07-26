@@ -115,6 +115,24 @@ const en: Dictionary = {
     priceNote:
       "Storage is usage-priced at about $0.02/MB — pay once, stored forever",
   },
+  recharge: {
+    title: "Top up",
+    subtitle:
+      "Usage-based pricing — pay once, stored forever. Choose an amount:",
+    custom: "Custom amount (≥ $5)",
+    customPlaceholder: "e.g. 50",
+    pay: "Continue to payment",
+    paying: "Redirecting to payment…",
+    simulateNote:
+      "Dev mode: payments not configured — the top-up will be simulated",
+    success: "Top-up complete — balance updated",
+    cancelled: "Payment cancelled",
+    failed: "Top-up failed — please try again later",
+    estimateTitle: "What does this balance store?",
+    estimatePhotos: "photos (at ~2MB each)",
+    estimateOr: "or practically unlimited text records",
+    currentBalance: "Current balance",
+  },
   auth: {
     signIn: "Sign in",
     signOut: "Sign out",

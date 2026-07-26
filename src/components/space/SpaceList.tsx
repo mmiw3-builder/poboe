@@ -3,7 +3,46 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useI18n } from "@/i18n/client";
+import { formatUsd } from "@/lib/billing/engine";
+import { useAuth } from "@/lib/client/auth";
 import { importKey, listKeys, type StoredKey } from "@/lib/client/keystore";
+
+function BalanceCard() {
+  const { t } = useI18n();
+  const { user } = useAuth();
+  const [balance, setBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    queueMicrotask(() => {
+      void fetch("/api/billing")
+        .then(async (res) => {
+          const json = (await res.json()) as {
+            data?: { balanceMicroUsd: number };
+          };
+          if (!cancelled && json.data) setBalance(json.data.balanceMicroUsd);
+        })
+        .catch(() => {});
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  if (!user || balance === null) return null;
+  return (
+    <div className="mx-auto mt-8 flex max-w-md items-center justify-between rounded-2xl border border-border bg-surface px-6 py-4">
+      <div>
+        <p className="text-xs text-muted">{t.billing.balance}</p>
+        <p className="font-serif text-2xl text-accent">{formatUsd(balance)}</p>
+      </div>
+      <Link href="/space/recharge" className="btn-outline !h-9 !px-4 text-xs">
+        {t.billing.recharge}
+      </Link>
+    </div>
+  );
+}
 
 /** Memorials owned by keys in this browser's keystore. */
 export default function SpaceList() {
@@ -48,6 +87,8 @@ export default function SpaceList() {
           {t.space.keyLocalNote}
         </p>
       </div>
+
+      <BalanceCard />
 
       <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
         <Link href="/create" className="btn-primary">
