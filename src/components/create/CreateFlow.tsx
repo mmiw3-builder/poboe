@@ -80,12 +80,12 @@ export default function CreateFlow() {
   }, [name, altName, born, died, epitaph, bio, portrait, gallery]);
 
   const previewUrls = useMemo(() => {
-    const map = new Map<string, string>();
+    const map: Record<string, string> = {};
     if (portrait?.status === "done") {
-      map.set(portrait.media.txId, portrait.media.previewUrl);
+      map[portrait.media.txId] = portrait.media.previewUrl;
     }
     for (const g of gallery) {
-      if (g.status === "done") map.set(g.media.txId, g.media.previewUrl);
+      if (g.status === "done") map[g.media.txId] = g.media.previewUrl;
     }
     return map;
   }, [portrait, gallery]);
@@ -485,10 +485,7 @@ export default function CreateFlow() {
         <div className="mt-8">
           {previewData.name ? (
             <div className="rounded-2xl border border-border bg-surface">
-              <MemorialView
-                data={previewData}
-                resolveUrl={(ref) => previewUrls.get(ref.txId) ?? ""}
-              />
+              <MemorialView data={previewData} mediaUrls={previewUrls} />
             </div>
           ) : (
             <p className="text-center text-sm text-muted">

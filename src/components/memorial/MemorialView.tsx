@@ -21,7 +21,8 @@ export interface MemorialViewData {
   media: MediaRef[];
 }
 
-export type MediaUrlResolver = (ref: MediaRef) => string;
+/** txId → displayable URL (gateway URL or local object URL in previews). */
+export type MediaUrlMap = Record<string, string>;
 
 function MediaImage({
   src,
@@ -48,12 +49,13 @@ function MediaImage({
 
 export default function MemorialView({
   data,
-  resolveUrl,
+  mediaUrls,
 }: {
   data: MemorialViewData;
-  resolveUrl: MediaUrlResolver;
+  mediaUrls: MediaUrlMap;
 }) {
   const { t } = useI18n();
+  const resolveUrl = (ref: MediaRef) => mediaUrls[ref.txId] ?? "";
   const dates = [data.born, data.died].filter(Boolean).join(" — ");
   const paragraphs = (data.bio ?? "")
     .split(/\n+/)

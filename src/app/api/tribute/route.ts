@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
 
   const memorial = await getMemorial(input.memorialId);
   if (!memorial) return errors.notFound("Memorial not found.");
-  if (!memorial.tributesEnabled) {
+  if (!memorial.manifest.tributesEnabled) {
     return errors.badRequest("Tributes are disabled for this memorial.");
   }
 

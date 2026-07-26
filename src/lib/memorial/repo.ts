@@ -83,7 +83,7 @@ async function fetchManifest(txId: string): Promise<MemorialManifest | null> {
 export async function getMemorial(
   id: string,
   opts: { includeHidden?: boolean } = {},
-): Promise<MemorialManifest | null> {
+): Promise<{ manifest: MemorialManifest; txId: string } | null> {
   if (!/^[A-Za-z0-9_-]{10,40}$/.test(id)) return null;
 
   const [page, moderation] = await Promise.all([
@@ -97,11 +97,18 @@ export async function getMemorial(
   ]);
   if (moderation?.hiddenMemorials.has(id)) return null;
 
-  const manifests = await Promise.all(page.nodes.map((n) => fetchManifest(n.id)));
-  let best: MemorialManifest | null = null;
-  for (const m of manifests) {
-    if (!m || m.id !== id) continue;
-    if (!best || m.version > best.version) best = m;
+  const manifests = await Promise.all(
+    page.nodes.map(async (n) => ({
+      manifest: await fetchManifest(n.id),
+      txId: n.id,
+    })),
+  );
+  let best: { manifest: MemorialManifest; txId: string } | null = null;
+  for (const entry of manifests) {
+    if (!entry.manifest || entry.manifest.id !== id) continue;
+    if (!best || entry.manifest.version > best.manifest.version) {
+      best = { manifest: entry.manifest, txId: entry.txId };
+    }
   }
   return best;
 }
