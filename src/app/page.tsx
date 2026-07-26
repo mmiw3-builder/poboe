@@ -1,5 +1,7 @@
 import Link from "next/link";
+import MemorialCard from "@/components/memorial/MemorialCard";
 import { getDictionary, getLocale } from "@/i18n/server";
+import { listMemorials, type MemorialListItem } from "@/lib/memorial/repo";
 
 const FEATURE_ICONS: Record<string, React.ReactNode> = {
   permanent: (
@@ -32,6 +34,13 @@ export default async function Home() {
   const locale = await getLocale();
   const t = getDictionary(locale);
 
+  let recent: MemorialListItem[] = [];
+  try {
+    recent = (await listMemorials({ limit: 6 })).items;
+  } catch {
+    // The home page must render even if the index is unreachable.
+  }
+
   return (
     <main className="flex flex-1 flex-col">
       {/* Hero */}
@@ -60,6 +69,22 @@ export default async function Home() {
           </Link>
         </div>
       </section>
+
+      {/* Recent memorials */}
+      {recent.length > 0 && (
+        <section className="border-t border-border">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+            <h2 className="mb-8 text-center font-serif text-2xl font-semibold">
+              {t.home.recentMemorials}
+            </h2>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {recent.map((item) => (
+                <MemorialCard key={item.manifest.id} manifest={item.manifest} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Features */}
       <section className="border-t border-border">

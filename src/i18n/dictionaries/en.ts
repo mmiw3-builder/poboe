@@ -78,6 +78,15 @@ const en: Dictionary = {
     report: "Report",
     updatedAt: "Updated",
   },
+  explore: {
+    title: "Memorial Gallery",
+    subtitle: "Every name here is a life worth remembering.",
+    searchPlaceholder: "Search by name…",
+    empty: "No memorials yet. Build the first one for someone who matters.",
+    noResult: "No memorials match your search",
+    loadMore: "Load more",
+    beFirst: "Create a Memorial",
+  },
   tributes: {
     title: "Tributes",
     flower: "Flowers",

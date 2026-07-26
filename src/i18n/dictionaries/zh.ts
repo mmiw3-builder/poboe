@@ -78,6 +78,15 @@ const zh = {
     report: "举报",
     updatedAt: "更新于",
   },
+  explore: {
+    title: "缅怀长廊",
+    subtitle: "每一个名字，都是一段值得被记住的人生。",
+    searchPlaceholder: "按姓名查找…",
+    empty: "这里还没有纪念空间。为重要的人建立第一座纪念碑。",
+    noResult: "没有找到匹配的纪念空间",
+    loadMore: "加载更多",
+    beFirst: "建立纪念空间",
+  },
   tributes: {
     title: "缅怀",
     flower: "献花",
