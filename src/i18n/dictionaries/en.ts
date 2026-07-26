@@ -78,6 +78,25 @@ const en: Dictionary = {
     report: "Report",
     updatedAt: "Updated",
   },
+  space: {
+    title: "My Space",
+    subtitle: "Memorials guarded by the management keys in this browser.",
+    keyLocalNote:
+      "Management keys live only in this browser. On a new device, import your key backup file.",
+    empty: "No memorials in this browser yet.",
+    importKey: "Import key backup",
+    importInvalid: "Invalid backup file",
+    edit: "Edit",
+    view: "View",
+    createNew: "Create a new memorial",
+    editTitle: "Edit Memorial",
+    updatedTitle: "Update published",
+    updatedBody:
+      "The new version is permanently engraved. Indexing takes a moment — refresh shortly to see the latest content.",
+    loadFailed: "Could not load the memorial — please try again later",
+    keyMissing:
+      "No management key for this memorial in this browser. Import your key backup first.",
+  },
   explore: {
     title: "Memorial Gallery",
     subtitle: "Every name here is a life worth remembering.",

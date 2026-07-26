@@ -6,9 +6,21 @@ import MemorialView from "@/components/memorial/MemorialView";
 import { useI18n } from "@/i18n/client";
 import { uploadMedia, type UploadedMedia } from "@/lib/client/media";
 import { keyBackupBlob, type StoredKey } from "@/lib/client/keystore";
-import { PublishError, publishNewMemorial } from "@/lib/client/publish";
-import type { MediaRef } from "@/lib/memorial/schema";
+import {
+  PublishError,
+  publishNewMemorial,
+  publishUpdate,
+} from "@/lib/client/publish";
+import type { MediaRef, MemorialManifest } from "@/lib/memorial/schema";
 import { LIMITS } from "@/lib/moderation/limits";
+
+/** Editing context: reuse the wizard on an existing memorial. */
+export interface EditContext {
+  storedKey: StoredKey;
+  manifest: MemorialManifest;
+  /** txId → gateway URL for already-stored media. */
+  mediaUrls: Record<string, string>;
+}
 
 type PendingMedia =
   | { status: "uploading"; localId: string; previewUrl: string }
@@ -26,22 +38,43 @@ function toMediaRef(m: UploadedMedia, caption?: string): MediaRef {
   };
 }
 
-export default function CreateFlow() {
+function toPending(
+  refs: MediaRef[],
+  mediaUrls: Record<string, string>,
+): PendingMedia[] {
+  return refs.map((ref) => ({
+    status: "done",
+    localId: crypto.randomUUID(),
+    media: { ...ref, previewUrl: mediaUrls[ref.txId] ?? "" },
+    caption: ref.caption ?? "",
+  }));
+}
+
+export default function CreateFlow({ edit }: { edit?: EditContext }) {
   const { t, locale } = useI18n();
   const [step, setStep] = useState(0);
+  const initial = edit?.manifest;
 
   // Step 1 — basics
-  const [name, setName] = useState("");
-  const [altName, setAltName] = useState("");
-  const [born, setBorn] = useState("");
-  const [died, setDied] = useState("");
-  const [epitaph, setEpitaph] = useState("");
+  const [name, setName] = useState(initial?.subject.name ?? "");
+  const [altName, setAltName] = useState(initial?.subject.altName ?? "");
+  const [born, setBorn] = useState(initial?.subject.born ?? "");
+  const [died, setDied] = useState(initial?.subject.died ?? "");
+  const [epitaph, setEpitaph] = useState(initial?.subject.epitaph ?? "");
 
   // Step 2 — story & media
-  const [bio, setBio] = useState("");
-  const [portrait, setPortrait] = useState<PendingMedia | null>(null);
-  const [gallery, setGallery] = useState<PendingMedia[]>([]);
-  const [tributesEnabled, setTributesEnabled] = useState(true);
+  const [bio, setBio] = useState(initial?.subject.bio ?? "");
+  const [portrait, setPortrait] = useState<PendingMedia | null>(() =>
+    initial?.subject.portrait && edit
+      ? toPending([initial.subject.portrait], edit.mediaUrls)[0]
+      : null,
+  );
+  const [gallery, setGallery] = useState<PendingMedia[]>(() =>
+    initial && edit ? toPending(initial.media, edit.mediaUrls) : [],
+  );
+  const [tributesEnabled, setTributesEnabled] = useState(
+    initial?.tributesEnabled ?? true,
+  );
 
   // Step 3 — publish
   const [agree, setAgree] = useState(false);
@@ -49,7 +82,7 @@ export default function CreateFlow() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{
     memorialId: string;
-    key: StoredKey;
+    key: StoredKey | null;
   } | null>(null);
 
   const portraitInput = useRef<HTMLInputElement>(null);
@@ -148,13 +181,19 @@ export default function CreateFlow() {
     setPublishing(true);
     setError(null);
     try {
-      const res = await publishNewMemorial({
+      const draft = {
         ...previewData,
         media: previewData.media,
         tributesEnabled,
-        lang: locale,
-      });
-      setResult({ memorialId: res.memorialId, key: res.key });
+        lang: initial?.lang ?? locale,
+      };
+      if (edit) {
+        await publishUpdate(edit.storedKey, edit.manifest, draft);
+        setResult({ memorialId: edit.storedKey.memorialId, key: null });
+      } else {
+        const res = await publishNewMemorial(draft);
+        setResult({ memorialId: res.memorialId, key: res.key });
+      }
     } catch (err) {
       if (err instanceof PublishError) {
         if (err.code === "content_rejected") setError(t.create.errors.rejected);
@@ -182,7 +221,7 @@ export default function CreateFlow() {
   return (
     <div className="mx-auto w-full max-w-2xl px-4 pb-20 sm:px-6">
       <h1 className="mt-12 text-center font-serif text-3xl font-semibold sm:text-4xl">
-        {t.create.title}
+        {edit ? t.space.editTitle : t.create.title}
       </h1>
       <p className="mx-auto mt-4 max-w-xl text-center text-sm leading-6 text-muted">
         {t.create.intro}
@@ -547,7 +586,8 @@ function SuccessPanel({
   keyData,
 }: {
   memorialId: string;
-  keyData: StoredKey;
+  /** null when this was an update — the key already exists. */
+  keyData: StoredKey | null;
 }) {
   const { t } = useI18n();
   const [saved, setSaved] = useState(false);
@@ -558,11 +598,33 @@ function SuccessPanel({
       : `/m/${memorialId}`;
 
   function downloadKey() {
+    if (!keyData) return;
     const a = document.createElement("a");
     a.href = URL.createObjectURL(keyBackupBlob(keyData));
     a.download = `evermark-key-${memorialId}.json`;
     a.click();
     URL.revokeObjectURL(a.href);
+  }
+
+  if (!keyData) {
+    return (
+      <div className="mx-auto w-full max-w-xl px-4 pb-20 text-center sm:px-6">
+        <div className="halo pt-16">
+          <p className="text-4xl">🕊️</p>
+          <h1 className="mt-6 font-serif text-3xl font-semibold">
+            {t.space.updatedTitle}
+          </h1>
+          <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-muted">
+            {t.space.updatedBody}
+          </p>
+        </div>
+        <div className="mt-10">
+          <Link href={`/m/${memorialId}`} className="btn-primary inline-flex">
+            {t.create.success.visit}
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (

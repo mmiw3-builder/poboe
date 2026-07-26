@@ -78,6 +78,24 @@ const zh = {
     report: "举报",
     updatedAt: "更新于",
   },
+  space: {
+    title: "我的空间",
+    subtitle: "由本浏览器中的管理密钥所守护的纪念空间。",
+    keyLocalNote:
+      "管理密钥仅保存在您的浏览器本地。更换设备时，请使用密钥备份文件导入。",
+    empty: "本浏览器中还没有纪念空间。",
+    importKey: "导入密钥备份",
+    importInvalid: "备份文件无效",
+    edit: "编辑",
+    view: "查看",
+    createNew: "建立新的纪念空间",
+    editTitle: "编辑纪念空间",
+    updatedTitle: "更新已发布",
+    updatedBody:
+      "新版本已永久刻录。网络索引需要片刻，稍后刷新即可看到最新内容。",
+    loadFailed: "无法加载纪念空间内容，请稍后再试",
+    keyMissing: "本浏览器中没有该纪念空间的管理密钥，请先导入密钥备份。",
+  },
   explore: {
     title: "缅怀长廊",
     subtitle: "每一个名字，都是一段值得被记住的人生。",

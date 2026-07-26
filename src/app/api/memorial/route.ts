@@ -3,12 +3,22 @@ import { errors, ok } from "@/lib/api/respond";
 import { getAppTag } from "@/lib/irys/config";
 import { uploadJson } from "@/lib/irys/server";
 import { verifyManifest } from "@/lib/memorial/identity";
+import { getMemorial } from "@/lib/memorial/repo";
 import { TAGS, memorialManifestSchema } from "@/lib/memorial/schema";
 import { LIMITS } from "@/lib/moderation/limits";
 import { clientKeyFromHeaders, rateLimit } from "@/lib/moderation/rateLimit";
 import { moderateText } from "@/lib/moderation/text";
 
 export const runtime = "nodejs";
+
+/** Fetch the latest valid manifest (used by the edit flow). */
+export async function GET(req: NextRequest) {
+  const id = req.nextUrl.searchParams.get("id");
+  if (!id) return errors.badRequest("Missing id.");
+  const result = await getMemorial(id);
+  if (!result) return errors.notFound("Memorial not found.");
+  return ok({ manifest: result.manifest, txId: result.txId });
+}
 
 /**
  * Publish (create or update) a memorial. The client generates the keypair,
