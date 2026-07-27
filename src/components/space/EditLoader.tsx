@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import CreateFlow, { type EditContext } from "@/components/create/CreateFlow";
 import { useI18n } from "@/i18n/client";
 import { getGatewayUrl } from "@/lib/irys/config";
-import { getKey, importKey } from "@/lib/client/keystore";
+import { importKey } from "@/lib/client/keystore";
+import { custodyKey, ensureKey } from "@/lib/client/keysync";
 import type { MemorialManifest } from "@/lib/memorial/schema";
 
 type State =
@@ -21,7 +22,8 @@ export default function EditLoader({ memorialId }: { memorialId: string }) {
   const fileInput = useRef<HTMLInputElement>(null);
 
   async function load() {
-    const storedKey = getKey(memorialId);
+    // Browser keystore first, account custody as the cross-device fallback.
+    const storedKey = await ensureKey(memorialId);
     if (!storedKey) {
       setState({ status: "no-key" });
       return;
@@ -94,8 +96,9 @@ export default function EditLoader({ memorialId }: { memorialId: string }) {
             const reader = new FileReader();
             reader.onload = () => {
               try {
-                importKey(String(reader.result));
-                void load();
+                const key = importKey(String(reader.result));
+                // Imported keys join the account custody (best-effort).
+                void custodyKey(key).finally(() => void load());
               } catch {
                 /* stays on no-key screen */
               }

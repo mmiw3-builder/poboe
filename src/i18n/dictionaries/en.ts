@@ -266,22 +266,23 @@ const en: Dictionary = {
   },
   space: {
     title: "My Space",
-    subtitle: "Memorials guarded by the management keys in this browser.",
+    subtitle: "The spaces you create and keep on Evermark.",
     keyLocalNote:
-      "Management keys live only in this browser. On a new device, import your key backup file.",
-    empty: "No memorials in this browser yet.",
+      "Spaces are tied to your account — sign in on any device to keep managing them. If you prefer full self-custody, back up or import key files under advanced options.",
+    empty: "No spaces of yours yet.",
     importKey: "Import key backup",
     importInvalid: "Invalid backup file",
+    advanced: "Advanced options",
     edit: "Edit",
     view: "View",
-    createNew: "Create a new memorial",
-    editTitle: "Edit Memorial",
+    createNew: "Create a new space",
+    editTitle: "Edit Space",
     updatedTitle: "Update published",
     updatedBody:
       "The new version is permanently engraved. Indexing takes a moment — refresh shortly to see the latest content.",
-    loadFailed: "Could not load the memorial — please try again later",
+    loadFailed: "Could not load the space — please try again later",
     keyMissing:
-      "No management key for this memorial in this browser. Import your key backup first.",
+      "Your account doesn't manage this space. If you hold a key backup file, import it to continue editing.",
   },
   explore: {
     title: "Memorial Gallery",
@@ -450,15 +451,20 @@ const en: Dictionary = {
       failed: "Publishing failed — please try again later",
     },
     success: {
-      title: "The memorial has been created",
-      body: "The content is permanently engraved. Back up your management key now — it is the only way to edit this memorial and cannot be recovered if lost.",
+      title: "The space has been created",
+      body: "The content is permanently engraved and the space is tied to your account. Sign in on any device to keep managing it.",
+      bodyFallback:
+        "The content is permanently engraved. Back up your management key now — it is the only way to edit this space and cannot be recovered if lost.",
       keyTitle: "Management key backup",
       keyBody:
         "The key lives only in this browser. Download the backup file and keep it safe (e.g. in a password manager).",
+      advanced: "Advanced: self-custody",
+      advancedBody:
+        "You can also download a key backup file for full self-custody — whoever holds it can manage this space, even without an account here.",
       downloadKey: "Download key backup",
-      copyLink: "Copy memorial link",
+      copyLink: "Copy space link",
       confirmSaved: "I have backed up the key",
-      visit: "Visit the memorial",
+      visit: "Visit the space",
     },
   },
 };

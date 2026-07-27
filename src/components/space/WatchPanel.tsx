@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n/client";
 import { listKeys } from "@/lib/client/keystore";
+import { listAccountSpaces } from "@/lib/client/keysync";
 
 interface WatchRow {
   memorialId: string;
@@ -178,6 +179,17 @@ export default function WatchPanel() {
         if (key.name) map[key.memorialId] = key.name;
       }
       if (!cancelled) setNames(map);
+      // Cross-device: fill names from account custody as well.
+      void listAccountSpaces().then((spaces) => {
+        if (cancelled) return;
+        setNames((prev) => {
+          const merged = { ...prev };
+          for (const s of spaces) {
+            if (s.name && !merged[s.memorialId]) merged[s.memorialId] = s.name;
+          }
+          return merged;
+        });
+      });
       void fetch("/api/watch")
         .then(async (res) => {
           const json = (await res.json()) as {

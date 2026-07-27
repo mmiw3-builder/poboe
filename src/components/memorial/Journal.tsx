@@ -6,7 +6,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import BillingPanel from "@/components/create/BillingPanel";
 import { useI18n } from "@/i18n/client";
 import { EntryPublishError, publishEntry } from "@/lib/client/journal";
-import { getKey, type StoredKey } from "@/lib/client/keystore";
+import type { StoredKey } from "@/lib/client/keystore";
+import { ensureKey } from "@/lib/client/keysync";
 import { uploadMedia, type UploadedMedia } from "@/lib/client/media";
 import type { JournalEntry, MediaRef } from "@/lib/memorial/schema";
 import { LIMITS } from "@/lib/moderation/limits";
@@ -289,9 +290,11 @@ export default function Journal({
 
   useEffect(() => {
     let cancelled = false;
-    // Deferred: the keystore lives in localStorage, read after hydration.
+    // Deferred: local keystore first, then account custody (cross-device).
     queueMicrotask(() => {
-      if (!cancelled) setStoredKey(getKey(memorialId));
+      void ensureKey(memorialId).then((key) => {
+        if (!cancelled) setStoredKey(key);
+      });
     });
     return () => {
       cancelled = true;

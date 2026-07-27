@@ -112,6 +112,7 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
   const [result, setResult] = useState<{
     memorialId: string;
     key: StoredKey | null;
+    custodied: boolean;
   } | null>(null);
 
   const portraitInput = useRef<HTMLInputElement>(null);
@@ -267,10 +268,18 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
       };
       if (edit) {
         await publishUpdate(edit.storedKey, edit.manifest, draft);
-        setResult({ memorialId: edit.storedKey.memorialId, key: null });
+        setResult({
+          memorialId: edit.storedKey.memorialId,
+          key: null,
+          custodied: true,
+        });
       } else {
         const res = await publishNewMemorial(draft);
-        setResult({ memorialId: res.memorialId, key: res.key });
+        setResult({
+          memorialId: res.memorialId,
+          key: res.key,
+          custodied: res.custodied,
+        });
       }
     } catch (err) {
       if (err instanceof PublishError) {
@@ -289,7 +298,13 @@ export default function CreateFlow({ edit }: { edit?: EditContext }) {
   }
 
   if (result) {
-    return <SuccessPanel memorialId={result.memorialId} keyData={result.key} />;
+    return (
+      <SuccessPanel
+        memorialId={result.memorialId}
+        keyData={result.key}
+        custodied={result.custodied}
+      />
+    );
   }
 
   const steps = [
@@ -883,10 +898,13 @@ function Field({
 function SuccessPanel({
   memorialId,
   keyData,
+  custodied,
 }: {
   memorialId: string;
   /** null when this was an update — the key already exists. */
   keyData: StoredKey | null;
+  /** Whether the key is safely custodied under the account. */
+  custodied: boolean;
 }) {
   const { t } = useI18n();
   const [saved, setSaved] = useState(false);
@@ -903,6 +921,13 @@ function SuccessPanel({
     a.download = `evermark-key-${memorialId}.json`;
     a.click();
     URL.revokeObjectURL(a.href);
+  }
+
+  function copyLink() {
+    void navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
   }
 
   if (!keyData) {
@@ -926,6 +951,50 @@ function SuccessPanel({
     );
   }
 
+  // The everyday path: the account keeps the key; nothing to babysit.
+  if (custodied) {
+    return (
+      <div className="mx-auto w-full max-w-xl px-4 pb-20 text-center sm:px-6">
+        <div className="halo pt-16">
+          <p className="text-4xl">🕊️</p>
+          <h1 className="mt-6 font-serif text-3xl font-semibold">
+            {t.create.success.title}
+          </h1>
+          <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-muted">
+            {t.create.success.body}
+          </p>
+        </div>
+
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+          <Link href={`/m/${memorialId}`} className="btn-primary inline-flex">
+            {t.create.success.visit}
+          </Link>
+          <button type="button" className="btn-outline" onClick={copyLink}>
+            {copied ? t.common.copied : t.create.success.copyLink}
+          </button>
+        </div>
+
+        <details className="mx-auto mt-10 max-w-md rounded-xl border border-border bg-surface px-5 py-4 text-left">
+          <summary className="cursor-pointer text-sm text-muted">
+            {t.create.success.advanced}
+          </summary>
+          <p className="mt-3 text-xs leading-5 text-muted">
+            {t.create.success.advancedBody}
+          </p>
+          <button
+            type="button"
+            className="btn-outline mt-4 !h-9 !px-4 text-xs"
+            onClick={downloadKey}
+          >
+            {t.create.success.downloadKey}
+          </button>
+        </details>
+      </div>
+    );
+  }
+
+  // Custody failed (offline, server hiccup): the browser copy is the only
+  // one, so fall back to the insistent backup flow.
   return (
     <div className="mx-auto w-full max-w-xl px-4 pb-20 text-center sm:px-6">
       <div className="halo pt-16">
@@ -934,7 +1003,7 @@ function SuccessPanel({
           {t.create.success.title}
         </h1>
         <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-muted">
-          {t.create.success.body}
+          {t.create.success.bodyFallback}
         </p>
       </div>
 
@@ -949,16 +1018,7 @@ function SuccessPanel({
           <button type="button" className="btn-primary" onClick={downloadKey}>
             {t.create.success.downloadKey}
           </button>
-          <button
-            type="button"
-            className="btn-outline"
-            onClick={() => {
-              void navigator.clipboard.writeText(url).then(() => {
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              });
-            }}
-          >
+          <button type="button" className="btn-outline" onClick={copyLink}>
             {copied ? t.common.copied : t.create.success.copyLink}
           </button>
         </div>
