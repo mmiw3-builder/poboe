@@ -62,10 +62,12 @@ export const ledger = sqliteTable("ledger", {
   createdAt: integer("created_at").notNull(),
 });
 
-/** Free storage allowance accounting, in bytes. */
+/** Storage allowance accounting, in bytes (free tier + purchased bundles). */
 export const usage = sqliteTable("usage", {
   userId: text("user_id").primaryKey(),
   freeBytesUsed: integer("free_bytes_used").notNull().default(0),
+  /** Extra allowance from one-time bundle purchases (永恒套餐). */
+  grantedBytes: integer("granted_bytes").notNull().default(0),
   updatedAt: integer("updated_at").notNull(),
 });
 

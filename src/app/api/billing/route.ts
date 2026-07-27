@@ -3,10 +3,9 @@ import { z } from "zod";
 import { errors, ok } from "@/lib/api/respond";
 import { userFromRequest } from "@/lib/auth/session";
 import {
-  FREE_ALLOWANCE_BYTES,
   PRICE_PER_MB_MICRO_USD,
+  getAllowance,
   getBalanceMicroUsd,
-  getFreeBytesRemaining,
   quoteBytes,
 } from "@/lib/billing/engine";
 
@@ -16,14 +15,14 @@ export const runtime = "nodejs";
 export async function GET(req: NextRequest) {
   const user = await userFromRequest(req);
   if (!user) return errors.unauthorized();
-  const [balanceMicroUsd, freeBytesRemaining] = await Promise.all([
+  const [balanceMicroUsd, allowance] = await Promise.all([
     getBalanceMicroUsd(user.id),
-    getFreeBytesRemaining(user.id),
+    getAllowance(user.id),
   ]);
   return ok({
     balanceMicroUsd,
-    freeBytesRemaining,
-    freeAllowanceBytes: FREE_ALLOWANCE_BYTES,
+    freeBytesRemaining: allowance.remainingBytes,
+    freeAllowanceBytes: allowance.totalBytes,
     pricePerMbMicroUsd: PRICE_PER_MB_MICRO_USD,
   });
 }

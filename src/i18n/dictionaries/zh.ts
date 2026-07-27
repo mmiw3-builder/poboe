@@ -243,6 +243,15 @@ const zh = {
     estimatePhotos: "张照片（按 2MB/张估算）",
     estimateOr: "或纯文字记录几乎无限",
     currentBalance: "当前余额",
+    allowanceLeft: "剩余存储额度",
+    bundlesTitle: "永恒套餐",
+    bundlesNote: "一次买断，永久存储；容量与免费额度同池，发布时优先扣减",
+    bundleNames: {
+      keepsake: "珍藏",
+      heirloom: "传家",
+    },
+    bundleBuy: "购买",
+    topUpTitle: "按量充值",
   },
   auth: {
     signIn: "登录",

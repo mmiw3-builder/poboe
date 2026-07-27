@@ -10,6 +10,22 @@ import { db, schema } from "@/lib/db";
 export const PRICE_PER_MB_MICRO_USD = 20_000; // $0.02 per MB
 export const FREE_ALLOWANCE_BYTES = 10 * 1024 * 1024; // 10 MB per account
 const MB = 1024 * 1024;
+const GB = 1024 * MB;
+
+/**
+ * 永恒套餐 — one-time storage bundles. Bytes join the same allowance pool
+ * as the free tier (one mental model, no second currency), priced below
+ * the metered rate to reward the up-front commitment.
+ */
+export const BUNDLES = [
+  { id: "keepsake", priceUsd: 29, bytes: 2 * GB },
+  { id: "heirloom", priceUsd: 99, bytes: 10 * GB },
+] as const;
+export type BundleId = (typeof BUNDLES)[number]["id"];
+
+export function bundleById(id: string) {
+  return BUNDLES.find((b) => b.id === id) ?? null;
+}
 
 export class InsufficientBalanceError extends Error {
   constructor(
@@ -35,14 +51,30 @@ export async function getBalanceMicroUsd(userId: string): Promise<number> {
   return rows[0]?.total ?? 0;
 }
 
-export async function getFreeBytesRemaining(userId: string): Promise<number> {
+export interface Allowance {
+  /** Free tier + purchased bundles. */
+  totalBytes: number;
+  usedBytes: number;
+  remainingBytes: number;
+}
+
+export async function getAllowance(userId: string): Promise<Allowance> {
   const rows = await db()
     .select()
     .from(schema.usage)
     .where(eq(schema.usage.userId, userId))
     .limit(1);
   const used = rows[0]?.freeBytesUsed ?? 0;
-  return Math.max(0, FREE_ALLOWANCE_BYTES - used);
+  const total = FREE_ALLOWANCE_BYTES + (rows[0]?.grantedBytes ?? 0);
+  return {
+    totalBytes: total,
+    usedBytes: used,
+    remainingBytes: Math.max(0, total - used),
+  };
+}
+
+export async function getFreeBytesRemaining(userId: string): Promise<number> {
+  return (await getAllowance(userId)).remainingBytes;
 }
 
 export interface Quote {
@@ -94,7 +126,9 @@ export async function chargeBytes(
       .where(eq(schema.usage.userId, userId))
       .limit(1);
     const used = usageRows[0]?.freeBytesUsed ?? 0;
-    const freeRemaining = Math.max(0, FREE_ALLOWANCE_BYTES - used);
+    const allowance =
+      FREE_ALLOWANCE_BYTES + (usageRows[0]?.grantedBytes ?? 0);
+    const freeRemaining = Math.max(0, allowance - used);
     const freeBytesApplied = Math.min(bytes, freeRemaining);
     const chargedBytes = bytes - freeBytesApplied;
     const costMicroUsd = costForBytes(chargedBytes);
@@ -181,6 +215,50 @@ export async function refundCharge(
           .where(eq(schema.usage.userId, userId));
       }
     }
+  });
+}
+
+/**
+ * Credit a purchased bundle's bytes into the allowance pool, with a
+ * zero-delta ledger row for audit and idempotency (ref = checkout id).
+ */
+export async function grantBundleBytes(
+  userId: string,
+  bytes: number,
+  ref: string,
+  note: string,
+): Promise<void> {
+  await db().transaction(async (tx) => {
+    const rows = await tx
+      .select()
+      .from(schema.usage)
+      .where(eq(schema.usage.userId, userId))
+      .limit(1);
+    if (rows[0]) {
+      await tx
+        .update(schema.usage)
+        .set({
+          grantedBytes: rows[0].grantedBytes + bytes,
+          updatedAt: Date.now(),
+        })
+        .where(eq(schema.usage.userId, userId));
+    } else {
+      await tx.insert(schema.usage).values({
+        userId,
+        freeBytesUsed: 0,
+        grantedBytes: bytes,
+        updatedAt: Date.now(),
+      });
+    }
+    await tx.insert(schema.ledger).values({
+      id: crypto.randomUUID(),
+      userId,
+      deltaMicroUsd: 0,
+      kind: "grant",
+      ref,
+      note,
+      createdAt: Date.now(),
+    });
   });
 }
 

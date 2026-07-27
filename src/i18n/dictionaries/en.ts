@@ -251,6 +251,16 @@ const en: Dictionary = {
     estimatePhotos: "photos (at ~2MB each)",
     estimateOr: "or practically unlimited text records",
     currentBalance: "Current balance",
+    allowanceLeft: "Storage allowance left",
+    bundlesTitle: "Eternal Bundles",
+    bundlesNote:
+      "One price, permanent capacity — bundle bytes join your free allowance pool and are used first when publishing",
+    bundleNames: {
+      keepsake: "Keepsake",
+      heirloom: "Heirloom",
+    },
+    bundleBuy: "Buy",
+    topUpTitle: "Metered top-up",
   },
   auth: {
     signIn: "Sign in",

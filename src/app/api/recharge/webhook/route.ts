@@ -2,7 +2,11 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import type { NextRequest } from "next/server";
 import { eq } from "drizzle-orm";
 import { errors, ok } from "@/lib/api/respond";
-import { creditRecharge } from "@/lib/billing/engine";
+import {
+  bundleById,
+  creditRecharge,
+  grantBundleBytes,
+} from "@/lib/billing/engine";
 import { db, schema } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -47,7 +51,7 @@ export async function POST(req: NextRequest) {
       object: {
         id: string;
         amount_total?: number;
-        metadata?: { userId?: string };
+        metadata?: { userId?: string; bundleId?: string };
         client_reference_id?: string;
       };
     };
@@ -65,12 +69,24 @@ export async function POST(req: NextRequest) {
         .where(eq(schema.ledger.ref, session.id))
         .limit(1);
       if (!existing[0]) {
-        await creditRecharge(
-          userId,
-          cents * 10_000,
-          session.id,
-          `stripe recharge $${(cents / 100).toFixed(2)}`,
-        );
+        const bundle = session.metadata?.bundleId
+          ? bundleById(session.metadata.bundleId)
+          : null;
+        if (bundle) {
+          await grantBundleBytes(
+            userId,
+            bundle.bytes,
+            session.id,
+            `stripe bundle ${bundle.id} $${(cents / 100).toFixed(2)}`,
+          );
+        } else {
+          await creditRecharge(
+            userId,
+            cents * 10_000,
+            session.id,
+            `stripe recharge $${(cents / 100).toFixed(2)}`,
+          );
+        }
       }
     }
   }
