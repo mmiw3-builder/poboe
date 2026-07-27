@@ -13,7 +13,7 @@ import { verifyManifest } from "@/lib/memorial/identity";
 import { getMemorial } from "@/lib/memorial/repo";
 import { TAGS, memorialManifestSchema } from "@/lib/memorial/schema";
 import { LIMITS } from "@/lib/moderation/limits";
-import { rateLimit } from "@/lib/moderation/rateLimit";
+import { rateLimitPersistent } from "@/lib/moderation/rateLimit";
 import { moderateText } from "@/lib/moderation/text";
 
 export const runtime = "nodejs";
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   const user = await userFromRequest(req);
   if (!user) return errors.unauthorized();
 
-  const limited = rateLimit(
+  const limited = await rateLimitPersistent(
     "publish",
     user.id,
     LIMITS.publishesPerHour,

@@ -9,7 +9,7 @@ import {
 import { getAppTag } from "@/lib/irys/config";
 import { uploadBuffer } from "@/lib/irys/server";
 import { LIMITS, isAllowedMediaType, maxBytesFor } from "@/lib/moderation/limits";
-import { rateLimit } from "@/lib/moderation/rateLimit";
+import { rateLimitPersistent } from "@/lib/moderation/rateLimit";
 import { TAGS } from "@/lib/memorial/schema";
 
 export const runtime = "nodejs";
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   const user = await userFromRequest(req);
   if (!user) return errors.unauthorized();
 
-  const limited = rateLimit(
+  const limited = await rateLimitPersistent(
     "upload",
     user.id,
     LIMITS.uploadsPerHour,

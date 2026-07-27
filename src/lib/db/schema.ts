@@ -1,4 +1,5 @@
 import {
+  index,
   integer,
   sqliteTable,
   text,
@@ -98,6 +99,21 @@ export const memorialKeys = sqliteTable(
     createdAt: integer("created_at").notNull(),
   },
   (t) => [uniqueIndex("memorial_keys_memorial_idx").on(t.memorialId)],
+);
+
+/**
+ * Sliding-window rate-limit events for money-sensitive paths (the site
+ * wallet pays for storage). Shared across serverless instances, unlike the
+ * in-memory limiter that guards the cheap paths.
+ */
+export const rateEvents = sqliteTable(
+  "rate_events",
+  {
+    id: text("id").primaryKey(),
+    key: text("key").notNull(),
+    createdAt: integer("created_at").notNull(),
+  },
+  (t) => [index("rate_events_key_idx").on(t.key, t.createdAt)],
 );
 
 /**
