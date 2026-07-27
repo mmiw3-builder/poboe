@@ -1,7 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import type { NextRequest } from "next/server";
 import { errors, ok } from "@/lib/api/respond";
-import { advanceWatches } from "@/lib/watch/service";
+import { advanceWatches, sendJournalNudges } from "@/lib/watch/service";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -24,6 +24,9 @@ function authorize(req: NextRequest): boolean {
 
 export async function GET(req: NextRequest) {
   if (!authorize(req)) return errors.unauthorized();
-  const result = await advanceWatches(req.nextUrl.origin);
-  return ok(result);
+  const [watch, nudge] = [
+    await advanceWatches(req.nextUrl.origin),
+    await sendJournalNudges(req.nextUrl.origin),
+  ];
+  return ok({ ...watch, ...nudge });
 }

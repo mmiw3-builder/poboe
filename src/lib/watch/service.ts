@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, lt, or } from "drizzle-orm";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { db, schema } from "@/lib/db";
 import { bytesToBase64Url, utf8ToBytes } from "@/lib/codec";
@@ -27,6 +27,8 @@ import { sendMail } from "@/lib/mail";
 export const GRACE_DAYS = 14;
 export const COOLING_DAYS = 30;
 export const INACTIVITY_CHOICES = [30, 90, 180, 365] as const;
+/** Gentle journal reminder: after this much quiet, at most monthly. */
+export const NUDGE_AFTER_DAYS = 30;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -225,6 +227,73 @@ export async function confirmWatch(
     );
   }
   return { ok: true, coolingEndsAt };
+}
+
+/**
+ * A soft habit loop for living archives, entirely separate from the watch
+ * escalation: owners of a living space who have been quiet for a month get
+ * one warm "come write a moment" email, at most monthly. Users whose watch
+ * is already escalating are skipped — their inbox has weightier mail.
+ */
+export async function sendJournalNudges(
+  baseUrl: string,
+): Promise<{ nudged: number }> {
+  const now = Date.now();
+  const cutoff = now - NUDGE_AFTER_DAYS * DAY_MS;
+
+  const rows = await db()
+    .selectDistinct({
+      id: schema.users.id,
+      email: schema.users.email,
+    })
+    .from(schema.users)
+    .innerJoin(
+      schema.userMemorials,
+      eq(schema.userMemorials.userId, schema.users.id),
+    )
+    .where(
+      and(
+        eq(schema.userMemorials.subjectStatus, "living"),
+        isNotNull(schema.users.email),
+        lt(schema.users.lastSeenAt, cutoff),
+        or(
+          isNull(schema.users.lastNudgeAt),
+          lt(schema.users.lastNudgeAt, cutoff),
+        ),
+      ),
+    );
+
+  let nudged = 0;
+  for (const row of rows) {
+    if (!row.email) continue;
+    const escalated = await db()
+      .select({ id: schema.watches.id })
+      .from(schema.watches)
+      .where(
+        and(
+          eq(schema.watches.userId, row.id),
+          inArray(schema.watches.state, [
+            "overdue",
+            "pending_confirm",
+            "cooling",
+          ]),
+        ),
+      )
+      .limit(1);
+    if (escalated[0]) continue;
+
+    await sendMail(
+      row.email,
+      "永铭 Evermark：来写一段时光吧 / Come write a moment",
+      `好久不见。你的「人生进行时」空间已经安静了一段时间——生活值得被记下，一句话、一张照片，都会被永久保存。\n${baseUrl}/space\n\nIt's been a while. Your life-in-progress space has been quiet — life is worth writing down, and a line or a photo is kept forever.\n${baseUrl}/space`,
+    );
+    await db()
+      .update(schema.users)
+      .set({ lastNudgeAt: now })
+      .where(eq(schema.users.id, row.id));
+    nudged += 1;
+  }
+  return { nudged };
 }
 
 export interface SweepResult {
