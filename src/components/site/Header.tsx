@@ -47,6 +47,13 @@ function UserChip() {
           >
             {t.nav.mySpace}
           </Link>
+          <Link
+            href="/space/account"
+            className="block rounded-lg px-3 py-2 text-sm hover:bg-halo"
+            onClick={() => setMenuOpen(false)}
+          >
+            {t.account.title}
+          </Link>
           <button
             type="button"
             className="block w-full rounded-lg px-3 py-2 text-left text-sm text-muted hover:bg-halo"

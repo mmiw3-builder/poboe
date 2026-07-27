@@ -132,6 +132,39 @@ export async function findOrCreateUserByWallet(addressLower: string) {
   return user;
 }
 
+export async function emailInUse(emailRaw: string): Promise<boolean> {
+  const rows = await db()
+    .select({ id: schema.users.id })
+    .from(schema.users)
+    .where(eq(schema.users.email, normalizeEmail(emailRaw)))
+    .limit(1);
+  return rows.length > 0;
+}
+
+export async function walletInUse(addressLower: string): Promise<boolean> {
+  const rows = await db()
+    .select({ id: schema.users.id })
+    .from(schema.users)
+    .where(eq(schema.users.wallet, addressLower))
+    .limit(1);
+  return rows.length > 0;
+}
+
+/** Bind a second sign-in channel. Callers must have checked availability. */
+export async function bindEmail(userId: string, emailRaw: string) {
+  await db()
+    .update(schema.users)
+    .set({ email: normalizeEmail(emailRaw) })
+    .where(eq(schema.users.id, userId));
+}
+
+export async function bindWallet(userId: string, addressLower: string) {
+  await db()
+    .update(schema.users)
+    .set({ wallet: addressLower })
+    .where(eq(schema.users.id, userId));
+}
+
 /** Sends the login code via Resend when configured; returns false otherwise. */
 export async function sendLoginEmail(
   email: string,
