@@ -23,6 +23,8 @@ export const users = sqliteTable(
     lastSeenAt: integer("last_seen_at").notNull(),
     /** Last gentle journal-reminder email, for monthly throttling. */
     lastNudgeAt: integer("last_nudge_at"),
+    /** Last remembrance-digest email, for weekly throttling. */
+    lastDigestAt: integer("last_digest_at"),
   },
   (t) => [
     uniqueIndex("users_email_idx").on(t.email),

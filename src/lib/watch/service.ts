@@ -6,6 +6,7 @@ import { publicKeyOf } from "@/lib/crypto";
 import { getAppTag } from "@/lib/irys/config";
 import { uploadJson } from "@/lib/irys/server";
 import { signTransitionRecord } from "@/lib/memorial/identity";
+import { listContributions, listTributes } from "@/lib/memorial/repo";
 import { SCHEMA_TRANSITION, TAGS } from "@/lib/memorial/schema";
 import { sendMail } from "@/lib/mail";
 
@@ -294,6 +295,94 @@ export async function sendJournalNudges(
     nudged += 1;
   }
   return { nudged };
+}
+
+/** Remembrance digest: at most weekly, covering the last seven days. */
+export const DIGEST_INTERVAL_DAYS = 7;
+
+/**
+ * The return-visit loop: guardians learn that someone laid flowers, lit a
+ * candle or left words at their space this week. Sent at most weekly and
+ * only when there is something to tell.
+ */
+export async function sendTributeDigests(
+  baseUrl: string,
+): Promise<{ digested: number }> {
+  const now = Date.now();
+  const since = now - DIGEST_INTERVAL_DAYS * DAY_MS;
+
+  const users = await db()
+    .select({ id: schema.users.id, email: schema.users.email })
+    .from(schema.users)
+    .where(
+      and(
+        isNotNull(schema.users.email),
+        or(
+          isNull(schema.users.lastDigestAt),
+          lt(schema.users.lastDigestAt, since),
+        ),
+      ),
+    );
+
+  let digested = 0;
+  for (const user of users) {
+    if (!user.email) continue;
+    const owned = await db()
+      .select({
+        memorialId: schema.userMemorials.memorialId,
+        name: schema.memorialKeys.name,
+      })
+      .from(schema.userMemorials)
+      .leftJoin(
+        schema.memorialKeys,
+        eq(schema.memorialKeys.memorialId, schema.userMemorials.memorialId),
+      )
+      .where(eq(schema.userMemorials.userId, user.id));
+    if (owned.length === 0) continue;
+
+    const lines: string[] = [];
+    for (const space of owned) {
+      try {
+        const [tributes, contributions] = await Promise.all([
+          listTributes(space.memorialId, { limit: 100 }),
+          listContributions(space.memorialId),
+        ]);
+        const fresh = tributes.items.filter(
+          (item) => item.tribute.createdAt > since,
+        );
+        const flowers = fresh.filter((i) => i.tribute.kind === "flower").length;
+        const candles = fresh.filter((i) => i.tribute.kind === "candle").length;
+        const messages = fresh.filter(
+          (i) => i.tribute.kind === "message",
+        ).length;
+        const stories = contributions.filter(
+          (c) => c.contribution.createdAt > since,
+        ).length;
+        if (flowers + candles + messages + stories === 0) continue;
+        const label = space.name || space.memorialId;
+        lines.push(
+          `「${label}」：献花 ${flowers} · 点烛 ${candles} · 留言 ${messages} · 投稿 ${stories}\n  ${baseUrl}/m/${space.memorialId}`,
+        );
+      } catch {
+        // Index hiccup for one space must not sink the whole digest.
+      }
+    }
+
+    // Stamp even quiet weeks so each account is scanned once per interval.
+    await db()
+      .update(schema.users)
+      .set({ lastDigestAt: now })
+      .where(eq(schema.users.id, user.id));
+    if (lines.length === 0) continue;
+
+    await sendMail(
+      user.email,
+      "永铭 Evermark：这一周，有人来看过 / Someone visited this week",
+      `过去一周，您守护的空间收到了新的缅怀：\n\n${lines.join("\n\n")}\n\n谢谢您让这些名字被记住。\n\nIn the past week, the spaces you keep received new remembrance (flowers · candles · messages · stories above). Thank you for keeping these names alive.`,
+    );
+    digested += 1;
+  }
+  return { digested };
 }
 
 export interface SweepResult {
