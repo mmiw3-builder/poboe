@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useI18n } from "@/i18n/client";
 
@@ -49,6 +50,12 @@ export default function WatchConfirm({ token }: { token: string }) {
           <p className="mt-4 rounded-lg border border-accent/40 bg-halo px-4 py-3 text-xs leading-5 text-accent-strong">
             {t.watch.confirm.warning}
           </p>
+          <Link
+            href="/about#watch"
+            className="mt-3 inline-block text-xs text-accent underline-offset-4 hover:underline"
+          >
+            {t.watch.aboutLink} →
+          </Link>
           <button
             type="button"
             className="btn-primary mt-8 w-full"

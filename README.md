@@ -17,6 +17,7 @@ A public space of memory built on Irys permanent storage — for the departed, f
 - **时光记录** — 长期创作：每次只需一段话、几张照片，由空间钥匙签名后独立上链，无需重发整个 manifest
 - **守望机制** — 生者空间的临终托付：长期未登录 → 邮件提醒 → 亲友确认 → 30 天冷静期（本人登录即撤销）→ 管理端签名的链上 transition 记录将页面转为纪念模式
 - **登录与按量计费** — 邮箱验证码或钱包（personal_sign）登录；$0.02/MB 按量计费 + 10MB 免费额度，发布前逐项报价，余额不足即时提醒；固定档位（$5/$20/$100/自定义）Stripe Checkout 充值
+- **传统应用级体验** — 管理密钥自动加密托管到账户（AES-256-GCM at rest），换设备登录即可继续管理，主流程零密钥概念；偏好自主保管的用户仍可在高级选项中备份/导入/删除托管副本
 - **缅怀互动** — 访客献花 / 点烛 / 永久留言 / 投稿记忆（所有者审核后展示），均为链上记录，无需登录
 - **上传前审核** — 永久存储无法删除，因此在代付上传前拦截违规内容；站点层签名 hide/unhide 记录（本身也公开上链，可审计）
 - **中英双语** — Cookie + Accept-Language 检测，纪念页 URL 全球唯一、不含语言前缀
@@ -74,7 +75,7 @@ npm run build
 ## 部署到 Vercel
 
 1. 导入本仓库，Framework 选 Next.js（默认即可）
-2. 配置环境变量（同 `.env.example`）：Irys 一组、`SESSION_SECRET`、Turso 的 `DATABASE_URL`/`DATABASE_AUTH_TOKEN`（并对生产库执行一次 `npm run db:push`）、`RESEND_API_KEY`（登录码与守望邮件）、`STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET`（webhook 指向 `/api/recharge/webhook`）、`CRON_SECRET`（守望每日扫描，`vercel.json` 已声明 cron）
+2. 配置环境变量（同 `.env.example`）：Irys 一组、`SESSION_SECRET`、`KEY_ENCRYPTION_SECRET`（密钥托管加密）、Turso 的 `DATABASE_URL`/`DATABASE_AUTH_TOKEN`（并对生产库执行一次 `npm run db:push`）、`RESEND_API_KEY`（登录码、守望与时光提醒邮件）、`STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET`（webhook 指向 `/api/recharge/webhook`）、`CRON_SECRET`（每日守望扫描 + 时光提醒，`vercel.json` 已声明 cron）
 3. Deploy
 
 ### 切换 Mainnet（真·永久存储）
@@ -97,5 +98,5 @@ npm run build
 - 单文件 ≤ 3.5MB（Vercel 请求体限制）；大视频的升级路径是 Irys 余额授权 + 浏览器直传（SDK 已支持 `createApproval`/`paidBy`，未接入）
 - 姓名搜索为已加载页内过滤（链上索引仅支持标签精确匹配）
 - 限流为实例内存级；多实例下限额为「限额 × 实例数」
-- 空间管理密钥保存在创建者浏览器（可下载备份）；换设备需导入备份文件，尚无密钥托管/社交恢复
+- 密钥托管采用平台信任模型（服务端可解密，等同传统应用）；端到端加密托管（口令派生）与社交恢复是后续方向，自主保管选项已可用
 - 守望机制依赖运营数据库与邮件送达；transition 结果本身上链，但计时过程不上链

@@ -118,11 +118,11 @@ export default async function AboutPage() {
             }
           />
           <Faq
-            q={zh ? "管理密钥丢了怎么办？" : "What if I lose my key?"}
+            q={zh ? "换设备还能管理空间吗？" : "Can I manage my space from another device?"}
             a={
               zh
-                ? "管理密钥只保存在您的浏览器中，我们没有副本，丢失后无法找回，该空间将无法再更新（已发布内容不受影响，永久可访问）。请务必下载密钥备份文件并妥善保存。"
-                : "Keys live only in your browser; we keep no copy. A lost key cannot be recovered and the memorial can no longer be updated (published content is unaffected and stays accessible forever). Always download and safeguard the key backup file."
+                ? "可以。空间与您的账户绑定，管理密钥以加密形式托管，换一台设备登录即可继续编辑与记录。偏好完全自主保管的用户，可在高级选项中下载密钥备份并删除托管副本——此时请妥善保存备份文件，我们将不再持有副本。"
+                : "Yes. Spaces are tied to your account and the management key is custodied in encrypted form — sign in on any device to keep editing. If you prefer full self-custody, download a key backup under advanced options and delete the custodied copy; from then on, guard the file yourself, as we hold no copy."
             }
           />
           <Faq
@@ -137,8 +137,8 @@ export default async function AboutPage() {
             q={zh ? "费用如何？" : "What does it cost?"}
             a={
               zh
-                ? "当前阶段完全免费：存储费用由本站代付，并对上传大小设有合理限制。未来的高级功能（更大容量、更多媒体）可能采用一次性买断收费。"
-                : "Currently free: storage fees are covered by the site, with reasonable size limits. Future premium features (larger capacity, more media) may use one-time pricing."
+                ? "按实际存储量计费（$0.02/MB，一次付费、永久存储），每个账户含 10MB 免费额度——足够文字与数十张照片。每次发布前都会明确显示本次费用并从余额扣除；余额可按 $5/$20/$100 或自定义金额充值。"
+                : "Metered by actual storage ($0.02/MB, paid once for permanent storage) with a 10MB free allowance per account — plenty for text and dozens of photos. Every publish shows its exact cost up front and deducts from your balance, topped up in $5/$20/$100 or custom amounts."
             }
           />
           <Faq
@@ -150,6 +150,56 @@ export default async function AboutPage() {
             }
           />
         </div>
+      </Section>
+
+      <Section id="watch" title={zh ? "守望机制的约定" : "The Watch: our covenant"}>
+        {zh ? (
+          <>
+            <p>
+              「人生进行时」的空间可以开启守望：如果你长期未登录，我们先发邮件提醒你；
+              仍无回应时，才请你指定的守望联系人协助确认；确认之后还有 30 天冷静期——
+              期间你本人登录一次，一切立即撤销。全部环节走完，空间才会转为纪念模式，
+              并以公开的链上签名记录留档，任何人都可以核验这一转换的时间与依据。
+            </p>
+            <p>
+              对守望联系人：这是一份不可轻率对待的托付。请只在确认属实时点击确认；
+              恶意或轻率的确认属于滥用，将导致联系人资格与相关账户受限。若你不确定，
+              最好的做法是联系 TA 本人，或什么都不做——沉默不会触发任何变化。
+            </p>
+            <p>
+              我们深知这一机制触及生死之事，因此每一步都偏向「宁可误报平安，不可误判离世」：
+              多重提醒、真人确认、长冷静期、本人一票否决。如对流程有任何疑问或异议，
+              请通过举报与联系渠道与我们沟通。
+            </p>
+          </>
+        ) : (
+          <>
+            <p>
+              A life-in-progress space can enable the Watch: if you stop
+              signing in for a long time we first email you; only without a
+              response do we ask your chosen contact to help confirm; even
+              then a 30-day cooling period follows — one sign-in from you
+              cancels everything. Only after all of that does the space become
+              a memorial, recorded as a public, signed on-chain transition
+              anyone can audit.
+            </p>
+            <p>
+              To watch contacts: this trust must not be taken lightly. Confirm
+              only when you know it to be true; malicious or careless
+              confirmation is abuse and restricts the accounts involved. When
+              unsure, reach the person directly — or do nothing, for silence
+              changes nothing.
+            </p>
+            <p>
+              We know this mechanism touches matters of life and death, so
+              every step errs toward a false alarm of well-being over a false
+              declaration of death: repeated reminders, human confirmation, a
+              long cooling period, and the owner&rsquo;s absolute veto.
+              Questions or disputes are always welcome through the report and
+              contact channel.
+            </p>
+          </>
+        )}
       </Section>
 
       <Section id="terms" title={zh ? "服务条款要点" : "Terms in brief"}>

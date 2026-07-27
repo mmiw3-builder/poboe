@@ -192,6 +192,7 @@ const en: Dictionary = {
     empty:
       "No spaces published from this account yet. Publish one and set up its watch here.",
     spaceLink: "The Watch",
+    aboutLink: "Read the full Watch covenant",
     confirm: {
       title: "Watch confirmation",
       body: "An Evermark user named you as their watch contact. If they have truly passed away, please confirm below. A 30-day cooling period follows — a single sign-in from them cancels everything; after it ends, their space becomes a memorial.",

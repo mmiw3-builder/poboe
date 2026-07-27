@@ -218,6 +218,12 @@ export default function WatchPanel() {
         <p className="mx-auto mt-5 max-w-xl text-left text-xs leading-6 text-muted/90">
           {t.watch.intro}
         </p>
+        <Link
+          href="/about#watch"
+          className="mt-3 inline-block text-xs text-accent underline-offset-4 hover:underline"
+        >
+          {t.watch.aboutLink} →
+        </Link>
       </div>
 
       <div className="mt-10 space-y-4">
