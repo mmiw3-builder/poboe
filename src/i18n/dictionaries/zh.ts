@@ -7,6 +7,8 @@ const zh = {
     siteName: "永铭",
     siteNameFull: "永铭 Evermark",
     tagline: "每个人都值得被永远记住",
+    demoBanner:
+      "演示模式：当前内容写入测试网络，约 60 天后清除；正式版将写入主网、永久存储。",
     loading: "加载中…",
     error: "出错了，请稍后再试",
     retry: "重试",

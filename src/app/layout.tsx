@@ -8,6 +8,7 @@ import { I18nProvider } from "@/i18n/client";
 import { getDictionary, getLocale } from "@/i18n/server";
 import { AuthProvider } from "@/lib/client/auth";
 import { getTodayFestival } from "@/lib/festivals";
+import { getIrysNetwork } from "@/lib/irys/config";
 import { SITE } from "@/lib/site";
 
 const geistSans = Geist({
@@ -52,6 +53,8 @@ export default async function RootLayout({
   const locale = await getLocale();
   const dictionary = getDictionary(locale);
   const festival = getTodayFestival();
+  // Honesty first: outside mainnet the permanence promise is not yet real.
+  const demoMode = getIrysNetwork() !== "mainnet";
 
   return (
     <html
@@ -63,6 +66,11 @@ export default async function RootLayout({
       >
         <I18nProvider locale={locale} dictionary={dictionary}>
           <AuthProvider>
+          {demoMode && (
+            <p className="border-b border-accent/30 bg-halo px-4 py-1.5 text-center text-xs text-accent-strong">
+              {dictionary.common.demoBanner}
+            </p>
+          )}
           <Header />
           {festival && (
             <div className="border-b border-accent/30 bg-halo px-4 py-2.5 text-center text-sm">

@@ -5,6 +5,8 @@ const en: Dictionary = {
     siteName: "Evermark",
     siteNameFull: "永铭 Evermark",
     tagline: "Everyone deserves to be remembered, forever",
+    demoBanner:
+      "Demo mode: content is written to a test network and cleared after ~60 days; the production release writes to mainnet, permanently.",
     loading: "Loading…",
     error: "Something went wrong. Please try again later.",
     retry: "Retry",
