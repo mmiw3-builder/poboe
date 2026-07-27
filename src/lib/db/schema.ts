@@ -20,6 +20,8 @@ export const users = sqliteTable(
     displayName: text("display_name"),
     createdAt: integer("created_at").notNull(),
     lastSeenAt: integer("last_seen_at").notNull(),
+    /** Last gentle journal-reminder email, for monthly throttling. */
+    lastNudgeAt: integer("last_nudge_at"),
   },
   (t) => [
     uniqueIndex("users_email_idx").on(t.email),
@@ -64,15 +66,38 @@ export const usage = sqliteTable("usage", {
   updatedAt: integer("updated_at").notNull(),
 });
 
-/** Which account created/owns which memorial (keys stay in the browser). */
+/** Which account created/owns which memorial. */
 export const userMemorials = sqliteTable(
   "user_memorials",
   {
     userId: text("user_id").notNull(),
     memorialId: text("memorial_id").notNull(),
+    /** Stamped from the manifest at publish: living | deceased. */
+    subjectStatus: text("subject_status"),
     createdAt: integer("created_at").notNull(),
   },
   (t) => [uniqueIndex("user_memorials_idx").on(t.userId, t.memorialId)],
+);
+
+/**
+ * Account custody of space management keys, so signing in on any device is
+ * enough — the traditional-app experience. Secrets are AES-256-GCM
+ * encrypted at rest; users who prefer full self-custody can download a
+ * backup and delete the custodied copy.
+ */
+export const memorialKeys = sqliteTable(
+  "memorial_keys",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull(),
+    memorialId: text("memorial_id").notNull(),
+    publicKey: text("public_key").notNull(),
+    nonce: text("nonce").notNull(),
+    name: text("name").notNull().default(""),
+    encryptedSecretKey: text("encrypted_secret_key").notNull(),
+    createdAt: integer("created_at").notNull(),
+  },
+  (t) => [uniqueIndex("memorial_keys_memorial_idx").on(t.memorialId)],
 );
 
 /**

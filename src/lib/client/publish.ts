@@ -11,6 +11,7 @@ import {
   type UnsignedMemorialManifest,
 } from "@/lib/memorial/schema";
 import { saveKey, type StoredKey } from "./keystore";
+import { custodyKey } from "./keysync";
 
 export interface MemorialDraft {
   name: string;
@@ -93,6 +94,8 @@ export async function publishNewMemorial(draft: MemorialDraft): Promise<{
   memorialId: string;
   txId: string;
   key: StoredKey;
+  /** Whether the key was successfully custodied under the account. */
+  custodied: boolean;
 }> {
   const keyPair = generateKeyPair();
   const nonce = crypto.randomUUID();
@@ -125,7 +128,10 @@ export async function publishNewMemorial(draft: MemorialDraft): Promise<{
     createdAt: now,
   };
   saveKey(key);
-  return { memorialId, txId, key };
+  // Custody under the account so any signed-in device can manage the
+  // space. Best-effort — the local copy above already works here.
+  const custodied = await custodyKey(key);
+  return { memorialId, txId, key, custodied };
 }
 
 /** Publish a new version of an existing memorial using its stored key. */

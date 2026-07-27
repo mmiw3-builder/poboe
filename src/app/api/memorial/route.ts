@@ -111,15 +111,21 @@ export async function POST(req: NextRequest) {
       { name: TAGS.type, value: "memorial" },
       { name: TAGS.memorialId, value: manifest.id },
     ]);
-    // Link the memorial to the account (idempotent).
+    // Link the memorial to the account (idempotent) and keep the
+    // living/deceased stamp current for reminder targeting.
+    const subjectStatus = manifest.subject.status ?? "deceased";
     await db()
       .insert(schema.userMemorials)
       .values({
         userId: user.id,
         memorialId: manifest.id,
+        subjectStatus,
         createdAt: Date.now(),
       })
-      .onConflictDoNothing()
+      .onConflictDoUpdate({
+        target: [schema.userMemorials.userId, schema.userMemorials.memorialId],
+        set: { subjectStatus },
+      })
       .catch(() => {});
     return ok({
       txId: result.id,
