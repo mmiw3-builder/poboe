@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useI18n } from "@/i18n/client";
+import { listKeys } from "@/lib/client/keystore";
+import { listAccountSpaces } from "@/lib/client/keysync";
 import { lifeDates } from "@/lib/memorial/display";
 import { tileGradientCss as tileGradient } from "@/lib/personalHue";
 
@@ -63,6 +65,27 @@ export default function MemoryUniverse({
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
   const [camera, setCamera] = useState<Camera | null>(null);
+  const [mine, setMine] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    let cancelled = false;
+    // Which stars are the visitor's own: browser keys + account custody.
+    queueMicrotask(() => {
+      const ids = new Set(listKeys().map((k) => k.memorialId));
+      if (!cancelled && ids.size > 0) setMine(new Set(ids));
+      void listAccountSpaces().then((spaces) => {
+        if (cancelled || spaces.length === 0) return;
+        setMine((prev) => {
+          const next = new Set(prev);
+          for (const s of spaces) next.add(s.memorialId);
+          return next;
+        });
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Fit-all scale for the reset view, derived from the outermost ring.
   const fitScale = useCallback(
@@ -282,6 +305,7 @@ export default function MemoryUniverse({
           {visible.map((i) => {
             const p = people[i];
             const pos = positions[i];
+            const isMine = mine.has(p.id);
             return (
               <Link
                 key={p.id}
@@ -302,10 +326,10 @@ export default function MemoryUniverse({
                     <span
                       className={`star-node block rounded-full ${
                         p.living ? "star-node--living" : ""
-                      }`}
+                      } ${isMine ? "star-node--mine" : ""}`}
                       style={{
-                        width: 16,
-                        height: 16,
+                        width: isMine ? 20 : 16,
+                        height: isMine ? 20 : 16,
                         background: p.living
                           ? "var(--life)"
                           : "var(--accent)",
@@ -315,7 +339,12 @@ export default function MemoryUniverse({
                   </span>
                 ) : lod === "face" ? (
                   <span className="flex flex-col items-center gap-1.5">
-                    <Avatar p={p} sizePx={NODE - 28} />
+                    {isMine && (
+                      <span className="rounded-full border border-accent/60 bg-halo px-2 py-0.5 text-[9px] tracking-wide text-accent">
+                        {t.universe.myStar}
+                      </span>
+                    )}
+                    <Avatar p={p} sizePx={NODE - 28} mine={isMine} />
                     <span className="max-w-full truncate text-center font-serif text-[13px] leading-tight text-foreground/90">
                       {p.living && (
                         <span
@@ -328,8 +357,17 @@ export default function MemoryUniverse({
                     </span>
                   </span>
                 ) : (
-                  <span className="flex flex-col items-center rounded-2xl border border-border bg-surface/90 px-4 py-4 text-center backdrop-blur transition-colors group-hover:border-accent/60">
-                    <Avatar p={p} sizePx={NODE - 32} />
+                  <span
+                    className={`flex flex-col items-center rounded-2xl border bg-surface/90 px-4 py-4 text-center backdrop-blur transition-colors group-hover:border-accent/60 ${
+                      isMine ? "border-accent/60" : "border-border"
+                    }`}
+                  >
+                    {isMine && (
+                      <span className="mb-1.5 rounded-full border border-accent/60 bg-halo px-2 py-0.5 text-[9px] tracking-wide text-accent">
+                        {t.universe.myStar}
+                      </span>
+                    )}
+                    <Avatar p={p} sizePx={NODE - 32} mine={isMine} />
                     <span className="mt-2 font-serif text-sm font-semibold leading-tight">
                       {p.name}
                     </span>
@@ -398,6 +436,29 @@ export default function MemoryUniverse({
         >
           ⤢
         </button>
+        {size &&
+          (() => {
+            const idx = people.findIndex((p) => mine.has(p.id));
+            if (idx < 0) return null;
+            const pos = positions[idx];
+            return (
+              <button
+                type="button"
+                aria-label={t.universe.findMine}
+                title={t.universe.findMine}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-accent/60 bg-background/85 text-sm text-accent backdrop-blur transition-colors hover:border-accent"
+                onClick={() =>
+                  setCamera({
+                    scale: 0.7,
+                    tx: size.w / 2 - pos.x * 0.7,
+                    ty: size.h * 0.5 - pos.y * 0.7,
+                  })
+                }
+              >
+                ★
+              </button>
+            );
+          })()}
       </div>
 
       {/* Count + roam hint */}
@@ -415,10 +476,20 @@ export default function MemoryUniverse({
   );
 }
 
-function Avatar({ p, sizePx }: { p: UniversePerson; sizePx: number }) {
+function Avatar({
+  p,
+  sizePx,
+  mine,
+}: {
+  p: UniversePerson;
+  sizePx: number;
+  mine?: boolean;
+}) {
   return (
     <span
-      className="relative block overflow-hidden rounded-full ring-1 ring-border"
+      className={`relative block overflow-hidden rounded-full ${
+        mine ? "ring-2 ring-accent" : "ring-1 ring-border"
+      }`}
       style={{ width: sizePx, height: sizePx }}
     >
       {p.portraitUrl ? (

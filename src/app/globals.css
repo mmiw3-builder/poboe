@@ -248,6 +248,17 @@ body.candlelight {
 .star-node--living {
   box-shadow: 0 0 7px 2px color-mix(in srgb, var(--life) 55%, transparent);
 }
+/* The visitor's own star: a steady double halo among the twinkle. */
+.star-node--mine {
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent),
+    0 0 12px 4px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.star-node--mine.star-node--living {
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--life) 25%, transparent),
+    0 0 12px 4px color-mix(in srgb, var(--life) 60%, transparent);
+}
 @keyframes twinkle {
   0%,
   100% {

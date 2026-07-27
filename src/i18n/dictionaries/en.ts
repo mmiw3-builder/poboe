@@ -144,6 +144,8 @@ const en: Dictionary = {
     zoomOut: "Zoom out",
     reset: "Back to full view",
     createStar: "Light a star",
+    myStar: "Your star",
+    findMine: "Find my star",
   },
   journal: {
     title: "Moments",

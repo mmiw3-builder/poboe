@@ -144,6 +144,8 @@ const zh = {
     zoomOut: "缩小",
     reset: "回到全景",
     createStar: "点亮一颗星",
+    myStar: "你的星",
+    findMine: "找到我的星",
   },
   journal: {
     title: "时光",
